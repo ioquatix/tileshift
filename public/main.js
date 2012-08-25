@@ -139,13 +139,13 @@ Event.displacement = function(e){
 	switch(e)
 	{
 	case Event.NORTH:
-		displacement = new Vec2(1,0);
+		displacement = new Vec2(-1,0);
 		break;
 	case Event.EAST:
 		displacement = new Vec2(0,1);
 		break;
 	case Event.SOUTH:
-		displacement = new Vec2(-1,0);
+		displacement = new Vec2(1,0);
 		break;
 	case Event.WEST:
 		displacement = new Vec2(0,-1);
@@ -164,7 +164,9 @@ function GameState( initialWorld, initialLocation) {
 }
 
 GameState.prototype.pushEvent = function(event) {
-	this.currentPos += Event.displacement(event);
+	var displace = Event.displacement(event);
+	this.currentPos[0] += displace.x;
+	this.currentPos[1] += displace.y;
 	this.events.push(event);
 }
 
@@ -370,16 +372,16 @@ function handleUserInput (e) {
 	var keyValue = e.charCode ? e.charCode : e.keyCode;
 	switch(keyValue){
 	case 37: //left arrow
-		GameState.pushEvent(Event.WEST);
+		gameState.pushEvent(Event.WEST);
 		break;
 	case 38: //top arrow
-		GameState.pushEvent(Event.NORTH);
+		gameState.pushEvent(Event.NORTH);
 		break
 	case 39: //right arrow
-		GameState.pushEvent(Event.EAST);
+		gameState.pushEvent(Event.EAST);
 		break;
 	case 40: //down arrow
-		GameState.pushEvent(Event.SOUTH);
+		gameState.pushEvent(Event.SOUTH);
 		break;
 	}
 	
