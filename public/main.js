@@ -241,9 +241,9 @@ TileMap.prototype.beginSearch = function(pathFinder) {
 	var end = this.getSpecials(Tile.END)[0];
 	
 	if (start && end) {
-	var estimate = this.estimatePathCost(start[0], end[0]);
-		
-	pathFinder.addStep(null, start[0], 0, estimate);
+		var estimate = this.estimatePathCost(start[0], end[0]);
+			
+		pathFinder.addStep(null, start[0], 0, estimate);
 	}
 }
 
