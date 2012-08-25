@@ -309,7 +309,7 @@ Generator.prototype.evolve = function (iterations) {
 
 // Display the grid on a canvas object
 function TileMapRenderer () {
-	this.scale = [80, 100];
+	this.scale = [40, 50];
 }
 
 TileMapRenderer.prototype.pixelSize = function (grid) {
@@ -357,7 +357,7 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 				if (tile.special == Tile.END) {
 					var image = Tile.IMG.END;
 					
-					offset = (this.scale[0] - image.height) - 40;
+					offset = (this.scale[0] - image.height) - this.scale[0] / 2;
 					
 					context.drawImage(image, c*this.scale[1], r*this.scale[0] + offset);
 				}
@@ -365,7 +365,7 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 			
 			var widget = widgets.getWidgets([r,c]);
 			if (widget) {
-				var offset = (this.scale[0] - widget.height - 20);
+				var offset = (this.scale[0] - widget.height - this.scale[0] / 4);
 				if (widget) {
 					context.drawImage(widget, c*this.scale[1], r*this.scale[0] + offset);
 				}
