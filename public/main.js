@@ -194,46 +194,6 @@ GameState.prototype.getWidgets = function(pos) {
 	return;
 }
 
-// PathFinder delegates
-TileMap.P = new Array([-1, 0], [1, 0], [0, -1], [0, 1]);
-
-TileMap.prototype.addStepsFrom = function (pathFinder, node) {
-	var end = this.getSpecials(Tile.END)[0];
-	
-	for (var i = 0; i < TileMap.P.length; i++) {
-		var step = node.step;
-		var next = [step[0] + TileMap.P[i][0], step[1] + TileMap.P[i][1]];
-		var tile = this.get(next);
-			
-		if (tile) {
-			var estimateToGoal = this.estimatePathCost(next, end[0]);
-			pathFinder.addStep(node, next, 0.6, estimateToGoal);
-		}
-	}
-}
-
-TileMap.prototype.estimatePathCost = function (fromNode, toNode) {
-	var d = [toNode[0] - fromNode[0], toNode[1] - fromNode[1]];
-	return Math.sqrt(d[0]*d[0] + d[1]*d[1]);
-}
-
-TileMap.prototype.exactPathCost = function (fromNode, toNode) {
-	
-}
-
-TileMap.prototype.isGoalState = function (node) {
-	var end = this.getSpecials(Tile.END);
-	
-	for (var i = 0; i < end.length; i++) {
-		var endVec = Vec2.get(end[i][0]), stepVec = Vec2.get(node.step);
-		
-		if (endVec.equals(stepVec))
-			return true;
-	}
-	
-	return false;
-}
-
 TileMap.prototype.beginSearch = function(pathFinder) {
 	var start = this.getSpecials(Tile.START)[0];
 	var end = this.getSpecials(Tile.END)[0];
@@ -242,6 +202,57 @@ TileMap.prototype.beginSearch = function(pathFinder) {
 		var estimate = this.estimatePathCost(start[0], end[0]);
 		pathFinder.addStep(null, start[0], 0, estimate);
 	}
+}
+
+function TileMapSearch(map, goals) {
+	this.map = map;
+	this.goals = goals;
+}
+
+// PathFinder delegates
+TileMapSearch.P = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+
+TileMapSearch.prototype.addStepsFrom = function (pathFinder, node) {
+	var goal = this.goals[0];
+	
+	for (var i = 0; i < TileMapSearch.P.length; i++) {
+		var step = node.step;
+		var next = [step[0] + TileMapSearch.P[i][0], step[1] + TileMapSearch.P[i][1]];
+		var tile = this.map.get(next);
+		
+		if (tile) {
+			var estimateToGoal = this.estimatePathCost(next, goal);
+			pathFinder.addStep(node, next, 0.95, estimateToGoal);
+		}
+	}
+}
+
+TileMapSearch.prototype.estimatePathCost = function (fromNode, toNode) {
+	//return Vec2.euclidianDistance(toNode, fromNode) * 2;
+	return Vec2.manhattenDistance(toNode, fromNode) * 1.2;
+}
+
+TileMapSearch.prototype.exactPathCost = function (fromNode, toNode) {
+	
+}
+
+TileMapSearch.prototype.isGoalState = function (node) {
+	for (var i = 0; i < this.goals.length; i++) {
+		if (Vec2.equals(this.goals[i], node.step))
+			return true;
+	}
+	
+	return false;
+}
+
+TileMapSearch.prototype.prime = function(search, start) {
+	var goal = this.goals[0];
+	
+	// Estimate the cost to the goal:
+	var estimate = this.estimatePathCost(start, goal);
+	
+	// Initial step:
+	search.addStep(null, start, 0, estimate);
 }
 
 function randomInt(max) {
@@ -257,45 +268,52 @@ function Generator (map, events) {
 Generator.prototype.mutate = function () {
 	var map = this.map.duplicate();
 	
-	for (var i = 0; i < 5; i++) {
-		var r = randomInt(map.size[0]), c = randomInt(map.size[1]);
+	for (var i = 0; i < 4; i++) {
+		var r = randomInt(11) - 5, c = randomInt(11) - 5;
+		
+		r += this.currentPosition[0];
+		c += this.currentPosition[1];
 
-		if (r == 0) r++;
-		if (c == 0) c++;
-		if (r == map.size[0]-1) r = map.size[0]-2;
-		if (c == map.size[1]-1) c = map.size[1]-2;
+		if (r < 1) r = 1;
+		if (c < 1) c = 1;
+		if (r > map.size[0]-1) r = map.size[0]-2;
+		if (c > map.size[1]-1) c = map.size[1]-2;
 
-		if (!map.get([r, c]))
+		if (map.get([r, c]) == null) {
 			map.set([r, c], new Tile(0, Platform.FLOOR));
+		}
 	}
 	
 	return [this.score(map), map]
 }
 
 Generator.prototype.score = function (map) {
-	var search = new PathFinder(map), worst = map.size[0] + map.size[1];
+	var goals = map.getSpecials(Tile.END);
 	
-	var end = map.getSpecials(Tile.END)[0];
-	var estimate = map.estimatePathCost(this.currentPosition, end[0]);
+	var delegate = new TileMapSearch(map, [goals[0][0]]);
+	var search = new PathFinder(delegate), worst = map.size[0] + map.size[1];
 	
-	// Initial step:
-	search.addStep(null, this.currentPosition, 0, estimate);
+	delegate.prime(search, this.currentPosition);
 	
 	// Try the worst number iterations to find a path:
 	search.update(worst);
 	
-	var best = search.currentBest();
-	if (best) {
-		return best.costToGoal;
-	} else {
-		return worst;
+	// Save first search for debugging purposes:
+	if (!this.search) {
+		this.search = search;
 	}
+	
+	var best = search.currentBest();
+	//console.log('candidate', best.cost(), goals[0][0], best.costFromStart, best.costToGoal, best.step, search);
+	return best;
 }
 
 Generator.prototype.evolve = function (iterations) {
 	var candidates = new BinaryHeap(function(candidate){
-		return candidate[0];
+		return candidate[0].cost();
 	});
+	
+	candidates.push([this.score(this.map), this.map])
 	
 	for (var i = 0; i < iterations; i += 1) {
 		var permutation = this.mutate();
@@ -303,6 +321,8 @@ Generator.prototype.evolve = function (iterations) {
 	}
 	
 	var best = candidates.pop();
+	
+	//console.log('selected', best[0].step, best[0], best[1]);
 	
 	return best[1];
 }
