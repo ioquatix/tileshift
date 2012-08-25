@@ -328,7 +328,6 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 			if (tile) {		
 				var fillStyle = null, strokeStyle = null;
 					
-				console.log("Rendering tile", tile)
 				if (tile.platform != Platform.NONE) {
 					image = Tile.IMG[tile.platform]
 					
