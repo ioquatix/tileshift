@@ -12,8 +12,18 @@ Vec2.get = function(input) {
 		return new Vec2(input[0], input[1]);
 }
 
-Vec2.prototype.equals = function(other) {
-	return this.x === other.x && this.y === other.y;
+Vec2.equals = function(left, right) {
+	return (left[0] == right[0]) && (left[1] == right[1]);
+}
+
+Vec2.euclidianDistance = function(left, right) {
+	var dx = left[0] - right[0], dy = left[1] - right[1];
+	return Math.sqrt(dx*dx + dy*dy);
+}
+
+Vec2.manhattenDistance = function(left, right) {
+	var dx = left[0] - right[0], dy = left[1] - right[1];
+	return Math.abs(dx) + Math.abs(dy);
 }
 
 Platform = {
