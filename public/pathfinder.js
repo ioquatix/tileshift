@@ -68,6 +68,8 @@ PathFinder.prototype.update = function (iterations) {
 		if (top.closed) {
 			this.open.pop();
 		} else {
+			this.best = top;
+			
 			if (this.delegate.isGoalState(top)) return true;
 			
 			this.open.pop();
@@ -80,4 +82,8 @@ PathFinder.prototype.update = function (iterations) {
 	}
 	
 	return this.open.size() == 0;
+}
+
+PathFinder.prototype.currentBest = function () {
+	return this.open.top() || this.best;
 }

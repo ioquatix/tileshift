@@ -20,7 +20,7 @@ Platform = {
 	NONE: 0,
 	FLOOR: 1,
 	WALL: 2
-}
+};
 
 // Tile class
 function Tile (cost, platform, special) {
@@ -70,6 +70,7 @@ Tile.IMG.loadImage('FINISH', 'finish.png');
 Tile.IMG.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
 Tile.IMG.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
 Tile.IMG.loadImage('PLAYER', 'tiles/Character Cat Girl.png');
+Tile.IMG.loadImage('END', 'tiles/Chest Closed.png');
 
 Tile.prototype.blocked = function () {
 	return this.cost == -1;
@@ -157,17 +158,20 @@ Event.displacement = function(e){
 }
 
 //Game State class
-function GameState( initialWorld, initialLocation) {
+function GameState(initialWorld, initialLocation) {
 	this.world = initialWorld;
-	this.events = [[Event.None],[initialLocation]];
+	this.events = [[Event.None, initialLocation]];
 	this.currentPos = initialLocation;
 }
 
 GameState.prototype.pushEvent = function(event) {
 	var displace = Event.displacement(event);
+	
 	this.currentPos[0] += displace.x;
 	this.currentPos[1] += displace.y;
-	this.events.push(event);
+	
+	// Track the event that occured and the position after the event was applied:
+	this.events.push([event, this.currentPos.slice(0)]);
 }
 
 GameState.prototype.getCurrentPos = function() {
@@ -177,12 +181,12 @@ GameState.prototype.getWidgets = function(pos) {
 	if(pos[0] == this.currentPos[0] && pos[1] == this.currentPos[1]){
 		return Tile.IMG.PLAYER;
 	}
+	
 	return;
 }
 
 // PathFinder delegates
 TileMap.P = new Array([-1, 0], [1, 0], [0, -1], [0, 1]);
-TileMap.D = new Array([-1, -1], [-1, 1], [1, 1], [1, -1]);
 
 TileMap.prototype.addStepsFrom = function (pathFinder, node) {
 	var end = this.getSpecials(Tile.END)[0];
@@ -197,21 +201,6 @@ TileMap.prototype.addStepsFrom = function (pathFinder, node) {
 			pathFinder.addStep(node, next, 0.6, estimateToGoal);
 		}
 	}
-
-	for (var i = 0; i < TileMap.D.length; i++) {
-		var step = node.step;
-		var p = TileMap.D[i];
-		var next = [step[0] + p[0], step[1] + p[1]];
-			
-		var tile = this.get(next);
-			
-		if (tile) {
-			if (this.get([step[0] + p[0], step[1]]) || this.get([step[0], step[1] + p[1]])) {
-			var estimateToGoal = this.estimatePathCost(next, end[0]);
-			pathFinder.addStep(node, next, 0.9, estimateToGoal);
-			}
-		}
-	}
 }
 
 TileMap.prototype.estimatePathCost = function (fromNode, toNode) {
@@ -221,16 +210,16 @@ TileMap.prototype.estimatePathCost = function (fromNode, toNode) {
 
 TileMap.prototype.exactPathCost = function (fromNode, toNode) {
 	
-	}
+}
 
 TileMap.prototype.isGoalState = function (node) {
 	var end = this.getSpecials(Tile.END);
 	
 	for (var i = 0; i < end.length; i++) {
-	var endVec = Vec2.get(end[i][0]), stepVec = Vec2.get(node.step);
+		var endVec = Vec2.get(end[i][0]), stepVec = Vec2.get(node.step);
 		
-	if (endVec.equals(stepVec))
-		return true;
+		if (endVec.equals(stepVec))
+			return true;
 	}
 	
 	return false;
@@ -242,7 +231,6 @@ TileMap.prototype.beginSearch = function(pathFinder) {
 	
 	if (start && end) {
 		var estimate = this.estimatePathCost(start[0], end[0]);
-			
 		pathFinder.addStep(null, start[0], 0, estimate);
 	}
 }
@@ -254,8 +242,7 @@ function randomInt(max) {
 function Generator (map, events) {
 	this.map = map;
 	this.events = events;
-	
-	this.startingPosition = this.events
+	this.currentPosition = events[events.length - 1][1];
 }
 
 Generator.prototype.mutate = function () {
@@ -269,14 +256,31 @@ Generator.prototype.mutate = function () {
 		if (r == map.size[0]-1) r = map.size[0]-2;
 		if (c == map.size[1]-1) c = map.size[1]-2;
 
-		map.set([r, c], new Tile(0, Platform.FLOOR));
+		if (!map.get([r, c]))
+			map.set([r, c], new Tile(0, Platform.FLOOR));
 	}
 	
 	return [this.score(map), map]
 }
 
-Generator.prototype.score = function () {
-	return 10;
+Generator.prototype.score = function (map) {
+	var search = new PathFinder(map), worst = map.size[0] + map.size[1];
+	
+	var end = map.getSpecials(Tile.END)[0];
+	var estimate = map.estimatePathCost(this.currentPosition, end[0]);
+	
+	// Initial step:
+	search.addStep(null, this.currentPosition, 0, estimate);
+	
+	// Try the worst number iterations to find a path:
+	search.update(worst);
+	
+	var best = search.currentBest();
+	if (best) {
+		return best.costToGoal;
+	} else {
+		return worst;
+	}
 }
 
 Generator.prototype.evolve = function (iterations) {
@@ -285,10 +289,13 @@ Generator.prototype.evolve = function (iterations) {
 	});
 	
 	for (var i = 0; i < iterations; i += 1) {
-		candidates.push(this.mutate());
+		var permutation = this.mutate();
+		candidates.push(permutation);
 	}
 	
-	return candidates.pop()[1];
+	var best = candidates.pop();
+	
+	return best[1];
 }
 
 // Display the grid on a canvas object
@@ -325,11 +332,11 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 	for (var r = 0; r < grid.size[0]; r += 1) {
 		for (var c = 0; c < grid.size[1]; c += 1) {
 			var tile = grid.get([r, c]);
-			if (tile) {		
+			if (tile) {
 				var fillStyle = null, strokeStyle = null;
 					
 				if (tile.platform != Platform.NONE) {
-					image = Tile.IMG[tile.platform]
+					var image = Tile.IMG[tile.platform]
 					
 					offset = (this.scale[0] - image.height);
 					
@@ -337,13 +344,19 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 						context.drawImage(image, c*this.scale[1], r*this.scale[0] + offset);
 					}
 				}
-			
-			
+				
+				if (tile.special == Tile.END) {
+					var image = Tile.IMG.END;
+					
+					offset = (this.scale[0] - image.height) - 40;
+					
+					context.drawImage(image, c*this.scale[1], r*this.scale[0] + offset);
+				}
 			}
 			
 			var widget = widgets.getWidgets([r,c]);
 			if (widget) {
-				offset = (this.scale[0] - widget.height - 20);
+				var offset = (this.scale[0] - widget.height - 20);
 				if (widget) {
 					context.drawImage(widget, c*this.scale[1], r*this.scale[0] + offset);
 				}
@@ -355,14 +368,19 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 var maze = document.getElementById('tileshift');
 var map = new TileMap([10, 15]);
 
+map.set([1, 1], new Tile(0, Platform.FLOOR))
+map.set([8, 13], new Tile(0, Platform.FLOOR, Tile.END));
+
 var mapRenderer = new TileMapRenderer();
 mapRenderer.updateCanvasSize(map, maze);
 
-var gameState = new GameState(map, [1,1]);
+var gameState = new GameState(map, [1, 1]);
 
-function updateSearch () {
-	var generator = new Generator(map);
-	map = generator.evolve(5);
+function updateWorld () {
+	var generator = new Generator(map, gameState.events);
+	map = generator.evolve(500);
+	
+	gameState.world = map;
 	
 	redraw();
 }
@@ -409,4 +427,8 @@ function redraw() {
 
 Tile.IMG.loaded(function(loader) {
 	redraw();
+	
+	setInterval(function() {
+		updateWorld();
+	}, 1000);
 });
