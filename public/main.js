@@ -375,19 +375,27 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 }
 
 var maze = document.getElementById('tileshift');
-var map = new TileMap([10, 15]);
-
-map.set([1, 1], new Tile(0, Platform.FLOOR))
-map.set([8, 13], new Tile(0, Platform.FLOOR, Tile.END));
+var map = null;
 
 var mapRenderer = new TileMapRenderer();
-mapRenderer.updateCanvasSize(map, maze);
-
+var searchRenderer = new SearchRenderer(mapRenderer.scale);
 var gameState = new GameState(map, [1, 1]);
+
+function resetGame() {
+	map = new TileMap([20, 30]);
+	map.set([1, 1], new Tile(0, Platform.START))
+	map.set([18, 28], new Tile(0, Platform.FLOOR, Tile.END));
+
+	mapRenderer.updateCanvasSize(map, maze);
+
+	gameState = new GameState(map, [1, 1]);
+}
 
 function updateWorld () {
 	var generator = new Generator(map, gameState.events);
-	map = generator.evolve(500);
+	map = generator.evolve(10);
+	searchRenderer.search = generator.search;
+	//console.log('search', generator.search);
 	
 	gameState.world = map;
 	
@@ -420,24 +428,42 @@ function handleUserInput (e) {
 		break;
 	}
 	
+	if (Vec2.equals(gameState.getCurrentPos(), [18, 28])) {
+		resetGame();
+	}
+	
 	redraw();
 }
 
 window.addEventListener('keydown', handleUserInput, false);
-	
+
+var visualiseDebug = false;
+
 function redraw() {
 	// Check the element is in the DOM and the browser supports canvas
 	if(maze.getContext) {
 	// Initaliase a 2-dimensional drawing context
 		var context = maze.getContext('2d');
 		mapRenderer.display(context, map, gameState);
+		
+		if (visualiseDebug) {
+			searchRenderer.display(context);
+		}
 	}
 }
 
+function toggleDebugVisualisation(event) {
+	visualiseDebug = event.target.checked;
+}
+
 Tile.IMG.loaded(function(loader) {
+	resetGame();
+	
 	redraw();
+	
+	updateWorld();
 	
 	setInterval(function() {
 		updateWorld();
-	}, 1000);
+	}, 500);
 });
