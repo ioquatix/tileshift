@@ -64,11 +64,9 @@ ResourceLoader.prototype.loaded = function (callback) {
 Tile.START = 1;
 Tile.END = 2;
 Tile.IMG = new ResourceLoader();
-Tile.IMG.loadImage('OPEN', 'open.png');
-Tile.IMG.loadImage('CLOSED', 'closed.png');
-Tile.IMG.loadImage('FINISH', 'finish.png');
 Tile.IMG.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
 Tile.IMG.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
+Tile.IMG.loadImage(Platform.START, 'tiles/Wall Block.png');
 Tile.IMG.loadImage('PLAYER', 'tiles/Character Cat Girl.png');
 Tile.IMG.loadImage('END', 'tiles/Chest Closed.png');
 

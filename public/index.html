@@ -18,14 +18,14 @@
 		<div style="text-align: center">
 			<h1>Tile Shift</h1>
 			
+			<p>You need to reach the chest. The game world will evolve to both assist and challenge you..</p>
+			
 			<canvas id="tileshift" style="border: 1px solid black; width: 0; height: 0;">
 				<p>Your browser doesn't support canvas.</p>
 			</canvas>
-			
-			<div>
-				<button onclick="javascript:updateSearch()">Update</button>
-			</div>
 		</div>
+	
+		<label><input type="checkbox" onclick="javascript:toggleDebugVisualisation(event)" /> Visualise A* Fitness Function</label>
 	
 		<script src="heap.js" type="text/javascript"></script>
 		<script src="pathfinder.js" type="text/javascript"></script>
