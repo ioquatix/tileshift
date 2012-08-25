@@ -29,7 +29,8 @@ Vec2.manhattenDistance = function(left, right) {
 Platform = {
 	NONE: 0,
 	FLOOR: 1,
-	WALL: 2
+	WALL: 2,
+	START: 3
 };
 
 // Tile class
