@@ -16,10 +16,18 @@ Vec2.prototype.equals = function(other) {
 	return this.x === other.x && this.y === other.y;
 }
 
+Platform = {
+	NONE: 0,
+	FLOOR: 1,
+	WALL: 2
+}
+
 // Tile class
-function Tile (cost, special) {
+function Tile (cost, platform, special) {
 	this.cost = cost;
 	this.special = special;
+	
+	this.platform = platform;
 }
 
 function ResourceLoader () {
@@ -59,6 +67,8 @@ Tile.IMG = new ResourceLoader();
 Tile.IMG.loadImage('OPEN', 'open.png');
 Tile.IMG.loadImage('CLOSED', 'closed.png');
 Tile.IMG.loadImage('FINISH', 'finish.png');
+Tile.IMG.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
+Tile.IMG.loadImage(Platform.WALL, 'tiles/Stone Block.png');
 
 Tile.prototype.blocked = function () {
 	return this.cost == -1;
@@ -172,11 +182,11 @@ TileMap.prototype.beginSearch = function(pathFinder) {
 
 // Display the grid on a canvas object
 function TileMapRenderer () {
-	this.scale = 30;
+	this.scale = [80, 100];
 }
 
 TileMapRenderer.prototype.pixelSize = function (grid) {
-	return [grid.size[0] * this.scale, grid.size[1] * this.scale];
+	return [grid.size[0] * this.scale[0], grid.size[1] * this.scale[1]];
 }
 
 TileMapRenderer.prototype.updateCanvasSize = function (grid, canvasElement) {
@@ -195,11 +205,11 @@ TileMapRenderer.prototype.display = function (context, grid) {
 	var s = this.pixelSize(grid);
 	
 	var backgroundStyle = context.createLinearGradient(0, 0, 0, s[1]);
-	backgroundStyle.addColorStop(0, '#990000');
-	backgroundStyle.addColorStop(1, '#660000');
+	backgroundStyle.addColorStop(0, '#000000');
+	backgroundStyle.addColorStop(1, '#000000');
 	
 	context.fillStyle = backgroundStyle;
-	context.fillRect(0, 0, grid.size[1] * this.scale, grid.size[0] * this.scale);
+	context.fillRect(0, 0, grid.size[1] * this.scale[1], grid.size[0] * this.scale[0]);
 	
 	for (var r = 0; r < grid.size[0]; r += 1) {
 		for (var c = 0; c < grid.size[1]; c += 1) {
@@ -209,37 +219,48 @@ TileMapRenderer.prototype.display = function (context, grid) {
 			
 			var fillStyle = null, strokeStyle = null;
 			
-			if (tile.blocked()) {
-				fillStyle = "#000000";
-				strokeStyle = null;
-			}
+			console.log("Rendering tile", tile)
+			if (tile.platform != Platform.NONE) {
+				image = Tile.IMG[tile.platform]
+				
+				offset = (this.scale[0] - image.height);
+				
+				if (image) {
+					context.drawImage(image, c*this.scale[1], r*this.scale[0] + offset);
+				}
+			} else {
+				if (tile.blocked()) {
+					fillStyle = "#000000";
+					strokeStyle = null;
+				}
 			
-			if (tile.special == Tile.START) {
-				fillStyle = "#00345C";
-				strokeStyle = "#00CC00";
-			}
+				if (tile.special == Tile.START) {
+					fillStyle = "#00345C";
+					strokeStyle = "#00CC00";
+				}
 			
-			if (tile.special == Tile.END) {
-				fillStyle = "#00345C";
-				strokeStyle = "#0000CC";
-			}
+				if (tile.special == Tile.END) {
+					fillStyle = "#00345C";
+					strokeStyle = "#0000CC";
+				}
 			
-			if (fillStyle) {
-				context.fillStyle = fillStyle;
-				context.fillRect(c*this.scale, r*this.scale, this.scale, this.scale);
-			}
+				if (fillStyle) {
+					context.fillStyle = fillStyle;
+					context.fillRect(c*this.scale, r*this.scale, this.scale, this.scale);
+				}
 			
-			if (strokeStyle) {
-				context.strokeStyle = strokeStyle;
-				context.lineWidth = 3;
-				context.strokeRect(c*this.scale + 1.5, r*this.scale + 1.5, this.scale - 3, this.scale - 3);
+				if (strokeStyle) {
+					context.strokeStyle = strokeStyle;
+					context.lineWidth = 3;
+					context.strokeRect(c*this.scale + 1.5, r*this.scale + 1.5, this.scale - 3, this.scale - 3);
+				}
 			}
 		}
 	}
 }
 
 function SearchRenderer () {
-	this.scale = 30;
+	this.scale = 100;
 }
 
 function randomInt(max) {
@@ -292,16 +313,21 @@ SearchRenderer.prototype.display = function (context, search) {
 
 var maze = document.getElementById('tileshift');
 
-var map = new TileMap([25, 25]);
+var map = new TileMap([10, 15]);
 
-for (var i = 0; i < 650; i++) {
-	var x = randomInt(map.size[0]), y = randomInt(map.size[1]);
+for (var i = 0; i < 10 * 10; i++) {
+	var r = randomInt(map.size[0]), c = randomInt(map.size[1]);
 	
-	map.set([x, y], new Tile(-1));
+	if (r == 0) r++;
+	if (c == 0) c++;
+	if (r == map.size[0]-1) r = map.size[0]-2;
+	if (c == map.size[1]-1) c = map.size[1]-2;
+	
+	map.set([r, c], new Tile(0, Platform.FLOOR));
 }
 
 map.set([0, 0], new Tile(0, Tile.START));
-map.set([24, 24], new Tile(0, Tile.END));
+map.set([9, 14], new Tile(0, Tile.END));
 
 var mapRenderer = new TileMapRenderer();
 mapRenderer.updateCanvasSize(map, maze);
@@ -311,8 +337,6 @@ search = new PathFinder(map);
 map.beginSearch(search);
 
 function updateSearch () {
-	search.update(1);
-	
 	// Check the element is in the DOM and the browser supports canvas
 	if(maze.getContext) {
 		// Initaliase a 2-dimensional drawing context
