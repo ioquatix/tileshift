@@ -40,10 +40,9 @@ PathFinder.prototype.currentPath = function () {
 	return path;
 }
 
-PathFinder.CLOSED = 'closed';
-
 PathFinder.prototype.addStep = function (parent, location, cost, estimateToGoal) {
-	if (this.state[location] == PathFinder.CLOSED) {
+	// console.log('addStep', parent, location, cost, estimateToGoal);
+	if (this.state[location] && this.state[location].closed) {
 		return;
 	}
 	
@@ -68,15 +67,17 @@ PathFinder.prototype.update = function (iterations) {
 		if (top.closed) {
 			this.open.pop();
 		} else {
-			this.best = top;
+			if (!this.best || this.best.cost() > top.cost()) this.best = top;
 			
-			if (this.delegate.isGoalState(top)) return true;
+			if (this.delegate.isGoalState(top)) {
+				return true;
+			}
 			
 			this.open.pop();
 			this.delegate.addStepsFrom(this, top);
 		}
 		
-		this.state[top.step] = PathFinder.CLOSED;
+		this.state[top.step].closed = true;
 		
 		iterations -= 1;
 	}
@@ -85,5 +86,67 @@ PathFinder.prototype.update = function (iterations) {
 }
 
 PathFinder.prototype.currentBest = function () {
-	return this.open.top() || this.best;
+	var best = this.best, top = this.open.top();
+
+	if (best && top) {
+		return best.cost() < top.cost() ? best : top;
+	} else {
+		return top || best;
+	}
+}
+
+
+function SearchRenderer (scale) {
+	this.scale = scale;
+	this.search = null;
+}
+
+function convertLocationKey(loc) {
+	loc = loc.split(',');
+	loc[0] = parseInt(loc[0]);
+	loc[1] = parseInt(loc[1]);
+	return loc;
+}
+
+SearchRenderer.prototype.display = function (context) {
+	if (!this.search) return;
+	
+	context.font = "14px sans-serif";
+	
+	for (var loc in this.search.state) {
+		loc = convertLocationKey(loc);
+		
+		if (this.search.state[loc] == this.search.currentBest()) {
+			context.fillStyle = "#0000FF";
+		} else if (this.search.state[loc].closed) {
+			context.fillStyle = "#FF0000";
+		} else {
+			context.fillStyle = "#00FF00";
+		}
+
+		var costText = this.search.state[loc].cost().toFixed(1);
+		
+		context.textAlign = "center";
+		
+		context.strokeStyle = "#000000";
+		context.strokeText(costText, (0.5+loc[1])*this.scale[1], (loc[0])*this.scale[0]);
+		
+		context.fillText(costText, (0.5+loc[1])*this.scale[1], (loc[0])*this.scale[0]);
+	}
+	
+	var top = this.search.currentBest();
+	
+	context.strokeStyle = "#0000EE";
+	context.beginPath();
+
+	if (top) {
+		context.moveTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (0 + top.step[0]))
+	}
+
+	while (top != null) {
+		context.lineTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (0 + top.step[0]))
+		top = top.parent;
+	}
+	
+	context.stroke();
 }
