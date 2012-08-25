@@ -367,20 +367,29 @@ function updateSearch () {
 	redraw();
 }
 
+function isValidEvent(event) {
+	var temp = gameState.currentPos.slice(0);
+	var displace = Event.displacement(event);
+	temp[0] += displace.x;
+	temp[1] += displace.y;
+	var tile = map.get(temp);
+	return tile && tile.blocked() != -1;
+}
+
 function handleUserInput (e) {
 	var keyValue = e.charCode ? e.charCode : e.keyCode;
-	switch(keyValue){
+	switch (keyValue) {
 	case 37: //left arrow
-		gameState.pushEvent(Event.WEST);
+		if (isValidEvent(Event.WEST)) gameState.pushEvent(Event.WEST);
 		break;
 	case 38: //top arrow
-		gameState.pushEvent(Event.NORTH);
+		if (isValidEvent(Event.NORTH)) gameState.pushEvent(Event.NORTH);
 		break
 	case 39: //right arrow
-		gameState.pushEvent(Event.EAST);
+		if (isValidEvent(Event.EAST)) gameState.pushEvent(Event.EAST);
 		break;
 	case 40: //down arrow
-		gameState.pushEvent(Event.SOUTH);
+		if (isValidEvent(Event.SOUTH)) gameState.pushEvent(Event.SOUTH);
 		break;
 	}
 	
