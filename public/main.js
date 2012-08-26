@@ -80,6 +80,7 @@ Tile.IMG.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
 Tile.IMG.loadImage(Platform.START, 'tiles/Wall Block.png');
 Tile.IMG.loadImage('PLAYER', 'tiles/Character Cat Girl.png');
 Tile.IMG.loadImage('END', 'tiles/Chest Closed.png');
+Tile.IMG.loadImage('KEY', 'tiles/Key.png');
 
 Tile.prototype.blocked = function () {
 	return this.cost == -1;
@@ -167,10 +168,15 @@ Event.displacement = function(e){
 }
 
 //Game State class
-function GameState(initialWorld, initialLocation) {
+function GameState(initialWorld, initialLocation, keyLocations) {
 	this.world = initialWorld;
 	this.events = [[Event.None, initialLocation]];
 	this.currentPos = initialLocation;
+	if(keyLocations){
+		this.keys = keyLocations;
+	}else{
+		this.keys = [];
+	}
 }
 
 GameState.prototype.pushEvent = function(event) {
@@ -186,11 +192,16 @@ GameState.prototype.pushEvent = function(event) {
 GameState.prototype.getCurrentPos = function() {
 	return this.currentPos;
 }
+
 GameState.prototype.getWidgets = function(pos) {
 	if(pos[0] == this.currentPos[0] && pos[1] == this.currentPos[1]){
 		return Tile.IMG.PLAYER;
 	}
-	
+	for(i = 0; i < this.keys.length; i++){
+		if(pos[0] == this.keys[i][0] && pos[1] == this.keys[i][1]){
+			return Tile.IMG.KEY;
+		}
+	}
 	return;
 }
 
@@ -401,9 +412,11 @@ TileMapRenderer.prototype.display = function (context, grid, widgets) {
 var maze = document.getElementById('tileshift');
 var map = null;
 
+var rooms = [];
+
 var mapRenderer = new TileMapRenderer();
 var searchRenderer = new SearchRenderer(mapRenderer.scale);
-var gameState = new GameState(map, [1, 1]);
+var gameState = null;
 
 function resetGame() {
 	map = new TileMap([20, 30]);
@@ -412,18 +425,36 @@ function resetGame() {
 
 	mapRenderer.updateCanvasSize(map, maze);
 
-	gameState = new GameState(map, [1, 1]);
+	gameState = new GameState(map, [1, 1]);//, generateKeyDoorPosition(map));
+	rooms.push(generateRoomAt(map, gameState.getCurrentPos()));
+	generateRoomsOnMap(7);
+	redraw();
 }
 
 function updateWorld () {
 	var generator = new Generator(map, gameState.events);
 	map = generator.evolve(10);
-	searchRenderer.search = generator.search;
-	//console.log('search', generator.search);
-	
+	searchRenderer.search = generator.search; 
+
 	gameState.world = map;
-	
 	redraw();
+}
+
+function generateRoomsOnMap(numberOfRooms) {
+	while(rooms.length < numberOfRooms){
+		var roompos = generateRoom(map);
+		if(roompos != null){
+			rooms.push(roompos);
+			redraw();
+		}
+	}
+	/*else{
+		//Join them using A*?. Will form a way tider map.
+		for(i in rooms){
+			generatePath(map,rooms[i]);
+			redraw();
+		}
+	}	*/
 }
 
 function isValidEvent(event) {
@@ -440,6 +471,7 @@ function handleUserInput (e) {
 	switch (keyValue) {
 	case 37: //left arrow
 		if (isValidEvent(Event.WEST)) gameState.pushEvent(Event.WEST);
+		
 		break;
 	case 38: //top arrow
 		if (isValidEvent(Event.NORTH)) gameState.pushEvent(Event.NORTH);
@@ -455,7 +487,6 @@ function handleUserInput (e) {
 	if (Vec2.equals(gameState.getCurrentPos(), [18, 28])) {
 		resetGame();
 	}
-	
 	redraw();
 }
 
