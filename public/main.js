@@ -259,6 +259,10 @@ function randomInt(max) {
 	return Math.floor(Math.random() * max)
 }
 
+function randomIntRange(min, max){
+	return Math.floor(Math.random() * (max - min) + min);
+}
+
 function Generator (map, events) {
 	this.map = map;
 	this.events = events;
