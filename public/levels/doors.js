@@ -1,3 +1,4 @@
+
 function DoorWidget() {
 	Widget.call(this, -1, Widget.DOOR);
 	this.offset = -10;
@@ -24,6 +25,25 @@ Tileshift.addLevel({
 	name: 'doors',
 	description: 'Find you way through the doors, to open the chest!',
 	difficulty: 1.2,
+	
+	randomFloorMutation: function(generator, map) {
+		for (var i = 0; i < 4; i++) {
+			var r = randomInt(11) - 5, c = randomInt(11) - 5;
+
+			r += generator.currentPosition[0];
+			c += generator.currentPosition[1];
+
+			if (r < 1) r = 1;
+			if (c < 1) c = 1;
+			if (r > map.size[0]-1) r = map.size[0]-2;
+			if (c > map.size[1]-1) c = map.size[1]-2;
+
+			if (map.get([r, c]) == null) {
+				map.set([r, c], new Tile(0, Platform.FLOOR));
+			}
+		}
+	},
+	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
 		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
@@ -65,6 +85,8 @@ Tileshift.addLevel({
 		
 		this.onTick = function() {
 			var generator = new Generator(this.map, this.gameState.events);
+			generator.mutations.push(config.randomFloorMutation);
+			
 			this.map = generator.evolve(10);
 			
 			this.gameState.map = this.map;

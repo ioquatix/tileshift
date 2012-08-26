@@ -7,25 +7,14 @@ function Generator (map, events, iterations) {
 	this.currentPosition = events[events.length - 1][1];
 	
 	this.iterations = iterations;
+	this.mutations = [];
 }
 
 Generator.prototype.mutate = function () {
 	var map = this.map.duplicate();
 	
-	for (var i = 0; i < 4; i++) {
-		var r = randomInt(11) - 5, c = randomInt(11) - 5;
-		
-		r += this.currentPosition[0];
-		c += this.currentPosition[1];
-
-		if (r < 1) r = 1;
-		if (c < 1) c = 1;
-		if (r > map.size[0]-1) r = map.size[0]-2;
-		if (c > map.size[1]-1) c = map.size[1]-2;
-
-		if (map.get([r, c]) == null) {
-			map.set([r, c], new Tile(0, Platform.FLOOR));
-		}
+	for (var index in this.mutations) {
+		this.mutations[index](this, map);
 	}
 	
 	return [this.score(map), map]

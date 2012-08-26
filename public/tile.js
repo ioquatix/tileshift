@@ -45,6 +45,7 @@ Widget.PLAYER = 'Widget.PLAYER';
 Widget.CHEST = 'Widget.CHEST';
 Widget.KEY = 'Widget.KEY';
 Widget.DOOR = 'Widget.DOOR';
+Widget.STAR = 'Widget.STAR';
 
 /// *** Widget Layer ***
 Widget.Layer = function() {

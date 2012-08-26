@@ -30,6 +30,7 @@ Tileshift = {
 		resourceLoader.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
 		resourceLoader.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
+		resourceLoader.loadImage(Widget.STAR, 'tiles/Star.png');
 		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
 	},
 	
