@@ -6,6 +6,7 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
+		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
 		
 		this.onBegin = function() {
 			this.map = new TileMap([20, 30]);
@@ -48,6 +49,8 @@ Tileshift.addLevel({
 		this.onUserEvent = function(event) {
 			if (this.gameState.isValidEvent(event)) {
 				this.gameState.pushEvent(event);
+				
+				this.resources.get('Player.MOVE').play();
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					controller.levelCompleted();
