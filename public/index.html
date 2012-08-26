@@ -28,11 +28,33 @@
 		</div>
 	
 		<label><input type="checkbox" onclick="javascript:toggleDebugVisualisation(event)" /> Visualise A* Fitness Function</label>
-	
+
+		<!-- General data-structures and algorithms -->
 		<script src="heap.js" type="text/javascript"></script>
 		<script src="pathfinder.js" type="text/javascript"></script>
-		<script src="generators.js" type="text/javascript"></script>
-		<script src="main.js" type="text/javascript"></script>
+		<script src="support.js" type="text/javascript"></script>
+
+		<!-- The 2D tile engine -->
+		<script src="tile.js" type="text/javascript"></script>
 		
+		<!-- The genetic evolution algorithm -->
+		<script src="generator.js" type="text/javascript"></script>
+		
+		<!-- Specific generator algorithms -->
+		<script src="generators.js" type="text/javascript"></script>
+		
+		<!-- The main platform code -->
+		<script src="tileshift.js" type="text/javascript"></script>
+		
+		<!-- Levels -->
+		<script src="levels/chest.js" type="text/javascript"></script>
+		
+		<script type="text/javascript">
+			window.onload = function() {
+				Tileshift.run({
+					levelName: 'chest'
+				});
+			}
+		</script>
 	</body>
 </html>

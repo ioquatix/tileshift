@@ -32,6 +32,17 @@ BinaryHeap.prototype = {
 		return result;
 	},
 
+	// Heap sort:
+	popAll: function() {
+		var all = [];
+		
+		while (this.content.length > 0) {
+			all.append(this.pop());
+		}
+		
+		return all;
+	},
+
 	remove: function(node) {
 		var len = this.content.length;
 		// To remove a value, we must search through the array to find
