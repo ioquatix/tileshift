@@ -22,20 +22,33 @@ Tileshift = {
 		return allLevels;
 	},
 	
+	loadDefaultResources: function(resourceLoader) {
+		resourceLoader.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
+		resourceLoader.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
+		resourceLoader.loadImage(Platform.START, 'tiles/Wall Block.png');
+		resourceLoader.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
+		resourceLoader.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
+		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
+	},
+	
 	run: function(config) {
 		if (this.controller) return;
 		
-		var canvas = document.getElementById('tileshift');
+		var canvas = document.getElementById('tileshift'), levels = [];
 		
-		var levels = [];
 		if (config && config.levelName) {
 			levels.push(this.levels[config.levelName]);
 		} else {
 			levels = this.levelsByDifficulty();
 		}
 		
-		this.controller = new Tileshift.Controller(canvas, levels);
-		this.controller.start();
+		var controller = new Tileshift.Controller(canvas, levels);
+		this.controller = controller;
+		
+		this.loadDefaultResources(controller.resources);
+		
+		// Once we have loaded all resources, start the game:
+		controller.resources.loaded(controller.start.bind(controller));
 		
 		window.addEventListener('keydown', this.handleUserInput.bind(this), false);
 	},
@@ -66,6 +79,8 @@ Tileshift.Controller = function(canvas, levels) {
 	this.canvas = canvas;
 	this.levels = levels;
 	this.currentLevelIndex = 0;
+	
+	this.resources = new ResourceLoader();
 }
 
 Tileshift.Controller.prototype.start = function() {

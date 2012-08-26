@@ -36,27 +36,61 @@ Vec2.P = [[-1, 0], [1, 0], [0, -1], [0, 1]];
 
 /// *** class ResourceLoader ***
 /// The basic resource loading class which provides a callback once all resources are loaded.
-function ResourceLoader () {
+function ResourceLoader (parent) {
+	this.parent = parent;
+	
 	this.resources = {};
 	this.callback = null;
 	this.counter = 0;
 }
 
-ResourceLoader.prototype.loadImage = function (name, src) {
+ResourceLoader.InvalidResourceNameError = function(name) {
+	this.name = name;
+	this.message = "Invalid resource name";
+}
+
+ResourceLoader.InvalidResourceNameError.prototype.toString = function() {
+	return this.message + ": " + this.name;
+}
+
+ResourceLoader.prototype.onLoad = function() {
+	this.counter -= 1;
+		
+	if (this.counter == 0) {
+		this.callback(this);
+	}
+}
+
+ResourceLoader.prototype.loadResource = function(name, source, type) {
+	if (typeof(name) != 'string') {
+		throw new ResourceLoader.InvalidResourceNameError(name);
+	}
+	
 	this.counter += 1;
-	var img = new Image();
-	this[name] = img;
 	
-	var that = this;
-	img.onload = function() {
-		that.counter -= 1;
-			
-		if (that.counter == 0) {
-			that.callback(that);
-		}
-	};
+	var resource = new type();
+	this.resources[name] = resource;
 	
-	img.src = src;
+	resource.onload = this.onLoad.bind(this);
+	resource.src = source
+}
+
+ResourceLoader.prototype.loadImage = function(name, source) {
+	this.loadResource(name, source, Image);
+}
+
+ResourceLoader.prototype.loadAudio = function(name, source) {
+	this.loadResource(name, source, Audio);
+}
+
+ResourceLoader.prototype.get = function(name) {
+	var resource = this.resources[name];
+	
+	if (!resource && this.parent) {
+		resource = this.parent.get(name);
+	}
+	
+	return resource;
 }
 
 ResourceLoader.prototype.loaded = function (callback) {

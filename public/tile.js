@@ -162,7 +162,7 @@ TileMapRenderer.prototype.display = function (context, layers) {
 					tile = layer.get(coordinate);
 				
 				if (tile) {
-					var image = this.resources[tile.identity];
+					var image = this.resources.get(tile.identity);
 					
 					if (image) {
 						offset = (this.scale[0] - image.height) + tile.offset;

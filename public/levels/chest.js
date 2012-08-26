@@ -4,13 +4,8 @@ Tileshift.addLevel({
 	description: 'Find the key to open the chest!',
 	difficulty: 1.0,
 	start: function(controller) {
-		this.resources = new ResourceLoader();
-		this.resources.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
-		this.resources.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
-		this.resources.loadImage(Platform.START, 'tiles/Wall Block.png');
-		this.resources.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
-		this.resources.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
-		this.resources.loadImage(Widget.KEY, 'tiles/Key.png');
+		console.log(controller.resources);
+		this.resources = new ResourceLoader(controller.resources);
 		
 		this.onBegin = function() {
 			this.map = new TileMap([20, 30]);
