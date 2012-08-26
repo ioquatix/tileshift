@@ -4,7 +4,6 @@ Tileshift.addLevel({
 	description: 'Find the key to open the chest!',
 	difficulty: 1.0,
 	start: function(controller) {
-		console.log(controller.resources);
 		this.resources = new ResourceLoader(controller.resources);
 		
 		this.onBegin = function() {
