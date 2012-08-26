@@ -50,6 +50,17 @@ Widget.Layer.prototype.get = function(coordinate) {
 	return this[coordinate];
 }
 
+Widget.Layer.prototype.duplicate = function() {
+	var copy = new Widget.Layer();
+	
+	for (var key in this) {
+		//if (this.hasOwnProperty(key))
+		copy[key] = this[key];
+	}
+	
+	return copy;
+}
+
 // TileMap data model - contains tiles.
 function TileMap (size, edges) {
 	// [rows, cols]
@@ -60,13 +71,20 @@ function TileMap (size, edges) {
 	} else {
 		this.edges = new Array(size[0] * size[1]);
 	}
+	
+	this.layers = {};
 }
 
 TileMap.prototype.duplicate = function() {
-	var map = new TileMap(this.size);
-	map.edges = this.edges.slice(0);
+	var copy = new TileMap(this.size);
 	
-	return map;
+	for (var key in this.layers) {
+		copy.layers[key] = this.layers[key].duplicate();
+	}
+	
+	copy.edges = this.edges.slice(0);
+	
+	return copy;
 }
 
 TileMap.prototype.set = function (at, value) {
