@@ -80,6 +80,7 @@ Tileshift.Controller = function(canvas, levels) {
 	this.levels = levels;
 	this.currentLevelIndex = 0;
 	
+	this.currentLevel = null;
 	this.resources = new ResourceLoader();
 }
 
@@ -102,6 +103,7 @@ Tileshift.Controller.prototype.runLevel = function(level) {
 
 Tileshift.Controller.prototype.levelCompleted = function() {
 	this.currentLevel.onFinish();
+	this.currentLevel = null;
 	
 	this.currentLevelIndex = (this.currentLevelIndex + 1) % this.levels.length;
 	
@@ -110,6 +112,7 @@ Tileshift.Controller.prototype.levelCompleted = function() {
 
 Tileshift.Controller.prototype.levelFailed = function() {
 	this.currentLevel.onFinish();
+	this.currentLevel = null;
 	
 	// This could potentially have lives.
 	this.resetGame();

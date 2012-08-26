@@ -3,7 +3,8 @@ Tileshift.addLevel({
 	name: 'chest',
 	description: 'Find the key to open the chest!',
 	difficulty: 1.0,
-	start: function(controller) {
+	
+	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
 		
 		this.onBegin = function() {
@@ -26,6 +27,8 @@ Tileshift.addLevel({
 		
 		this.onFinish = function() {
 			if (this.interval) clearInterval(this.interval);
+			
+			this.interval = null;
 		}
 		
 		this.onTick = function() {
@@ -55,5 +58,9 @@ Tileshift.addLevel({
 		}
 		
 		this.resources.loaded(controller.runLevel.bind(controller, this));
-	}
+	},
+	
+	start: function(controller) {
+		return new this.Level(this, controller);
+	},
 });
