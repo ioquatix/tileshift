@@ -23,6 +23,9 @@ Tile.WALL = 'Tile.WALL';
 Tile.START = 'Tile.START';
 Tile.END = 'Tile.END';
 
+Tile.WATER = 'Tile.WATER';
+Tile.DIRT = 'Tile.DIRT';
+
 // Legacy - please delete once done merging.
 Platform = Tile;
 
@@ -41,6 +44,7 @@ Widget.prototype.blocked = function () {
 Widget.PLAYER = 'Widget.PLAYER';
 Widget.CHEST = 'Widget.CHEST';
 Widget.KEY = 'Widget.KEY';
+Widget.DOOR = 'Widget.DOOR';
 
 /// *** Widget Layer ***
 Widget.Layer = function() {
