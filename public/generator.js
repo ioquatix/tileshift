@@ -35,7 +35,7 @@ Generator.prototype.score = function (map) {
 	var goals = map.getSpecials(Tile.END);
 	
 	var delegate = new TileMapSearch(map, [goals[0][0]]);
-	var search = new PathFinder(delegate), worst = (map.size[0] + map.size[1]) / 16;
+	var search = new PathFinder(delegate), worst = (map.size[0] + map.size[1]) / 8;
 	
 	delegate.prime(search, this.currentPosition);
 	

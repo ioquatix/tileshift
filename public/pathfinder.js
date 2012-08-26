@@ -67,7 +67,7 @@ PathFinder.prototype.update = function (iterations) {
 		if (top.closed) {
 			this.open.pop();
 		} else {
-			if (!this.best || this.best.cost() > top.cost()) this.best = top;
+			if (!this.best || this.best.costToGoal > top.costToGoal) this.best = top;
 			
 			if (this.delegate.isGoalState(top)) {
 				return true;
@@ -86,15 +86,8 @@ PathFinder.prototype.update = function (iterations) {
 }
 
 PathFinder.prototype.currentBest = function () {
-	var best = this.best, top = this.open.top();
-
-	if (best && top) {
-		return best.cost() < top.cost() ? best : top;
-	} else {
-		return top || best;
-	}
+	return this.best;
 }
-
 
 function SearchRenderer (scale) {
 	this.scale = scale;
