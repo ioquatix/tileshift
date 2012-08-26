@@ -23,9 +23,10 @@ Tileshift = {
 	},
 	
 	loadDefaultResources: function(resourceLoader) {
-		resourceLoader.loadImage(Platform.FLOOR, 'tiles/Stone Block.png');
-		resourceLoader.loadImage(Platform.WALL, 'tiles/Stone Block Tall.png');
-		resourceLoader.loadImage(Platform.START, 'tiles/Wall Block.png');
+		resourceLoader.loadImage(Tile.FLOOR, 'tiles/Stone Block.png');
+		resourceLoader.loadImage(Tile.WALL, 'tiles/Stone Block Tall.png');
+		resourceLoader.loadImage(Tile.START, 'tiles/Wall Block.png');
+		resourceLoader.loadImage(Tile.END, 'tiles/Wood Block.png');
 		resourceLoader.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
 		resourceLoader.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
