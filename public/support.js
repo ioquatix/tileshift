@@ -53,9 +53,11 @@ ResourceLoader.InvalidResourceNameError.prototype.toString = function() {
 	return this.message + ": " + this.name;
 }
 
-ResourceLoader.prototype.onLoad = function() {
+ResourceLoader.prototype.onLoad = function(name) {
 	this.counter -= 1;
-		
+	
+	//console.log("Resource loaded", name);
+	
 	if (this.counter == 0) {
 		this.callback(this);
 	}
@@ -71,8 +73,13 @@ ResourceLoader.prototype.loadResource = function(name, source, type) {
 	var resource = new type();
 	this.resources[name] = resource;
 	
-	resource.onload = this.onLoad.bind(this);
-	resource.src = source
+	resource.addEventListener('load', this.onLoad.bind(this, name));
+	resource.addEventListener('canplaythrough', this.onLoad.bind(this, name));
+	
+	//console.log("Loading resource", type, name, source);
+	resource.src = source;
+	
+	return resource;
 }
 
 ResourceLoader.prototype.loadImage = function(name, source) {
@@ -80,7 +87,7 @@ ResourceLoader.prototype.loadImage = function(name, source) {
 }
 
 ResourceLoader.prototype.loadAudio = function(name, source) {
-	this.loadResource(name, source, Audio);
+	var resource = this.loadResource(name, source, Audio);
 }
 
 ResourceLoader.prototype.get = function(name) {
