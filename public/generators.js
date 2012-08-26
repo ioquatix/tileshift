@@ -199,6 +199,7 @@ function makeWaterColumn(map){
 //the edge of the platform.
 function placeDoor(map, c) {
 	var dooroptions = [];
+	
 	for (r = 0; r < map.size[0]; r++) {
 		var tile = map.get([r, c]);
 		var upright = map.get([r - 1, c + 1]);
@@ -209,9 +210,10 @@ function placeDoor(map, c) {
 			dooroptions.push([r,c]);
 		}
 	}
+	
+	//Pick one of these doors.
 	var z = randomInt(dooroptions.length);
-	this.map.doors[dooroptions[z]] = new DoorWidget());
-	map.doors.push(dooroptions[z]);
+	map.layers.doors[dooroptions[z]] = new DoorWidget();
 	return dooroptions[z];
 }
 
@@ -222,8 +224,7 @@ function placeKey(map, door) {
 		p1 = new Vec2(randomIntRange(1, door[0]),randomIntRange(1, door[1]));
 		tile = map.get([p1.x,p1.y]);
 	}
-	
-	map.set([p1.x,p1.y], new Tile(0, Platform.WATER));
+	map.layers.keys[[p1.x,p1.y]] = new KeyWidget(door);
 	return [p1.x, p1.y];
 }
 
