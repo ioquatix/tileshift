@@ -1,36 +1,37 @@
 function DoorWidget() {
 	Widget.call(this, -1, Widget.DOOR);
-	this.offset = -50;
+	this.offset = -10;
+	
+	this.key = null;
 }
 
 DoorWidget.prototype = new Widget();
 DoorWidget.prototype.constructor = DoorWidget;
 
-function KeyWidget(doorCoordinates) {
+function KeyWidget() {
 	Widget.call(this, 0, Widget.KEY);
 	this.offset = -10;
-	this.door = doorCoordinates;
+	
+	this.door = null;
 }
 
 KeyWidget.prototype = new Widget();
 KeyWidget.prototype.constructor = KeyWidget;
 
+Tile.BRIDGE = 'Tile.BRIDGE';
+
 Tileshift.addLevel({
 	name: 'doors',
 	description: 'Find you way through the doors, to open the chest!',
-	difficulty: 1.0,
-	start: function(controller) {
-		this.resources = new ResourceLoader();
-		this.resources.loadImage(Tile.FLOOR, 'tiles/Stone Block.png');
-		this.resources.loadImage(Tile.WALL, 'tiles/Stone Block Tall.png');
-		this.resources.loadImage(Tile.START, 'tiles/Wall Block.png');
-		this.resources.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
-		this.resources.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
-		this.resources.loadImage(Widget.KEY, 'tiles/Key.png');
-		this.resources.loadImage(Platform.WATER, 'tiles/Water Block.png');
-		this.resources.loadImage(Platform.DIRT, 'tiles/Dirt Block.png');
+	difficulty: 1.2,
+	Level: function(config, controller) {
+		this.resources = new ResourceLoader(controller.resources);
+		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
+		this.resources.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		this.resources.loadImage(Widget.DOOR, 'tiles/Door Tall Closed.png');
-		this.resources.loadImage(Widget.KEY, 'tiles/Key.png');
+		this.resources.loadImage(Tile.BRIDGE, 'tiles/Bridge.png');
+		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
+		this.resources.loadAudio(Event.KEY, 'effects/Key.wav');
 		
 		this.onBegin = function() {
 			this.map = new TileMap([20, 30]);
@@ -77,19 +78,37 @@ Tileshift.addLevel({
 		}
 		
 		this.onUserEvent = function(event) {
-			//TODO HERE: if (event
-		
-			if (this.gameState.isValidEvent(event)) {
+			var location = Vec2.add(this.gameState.playerLocation, Event.displacement(event)),
+				doors = this.map.layers.doors,
+				door = doors[location];
+			
+			if (door) {
+				console.log('door', door, this.gameState.playerKeys);
+				
+				if (this.gameState.playerKeys[door.key.number]) {
+					delete this.gameState.playerKeys[door.key];
+					delete doors[location];
+					
+					this.resources.get(Event.DOOR).play();
+					
+					this.gameState.pushEvent(event);
+				}
+			} else if (this.gameState.isValidEvent(event)) {
 				this.gameState.pushEvent(event);
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
+					this.resources.get(Event.CHEST).play();
+					
 					controller.levelCompleted();
 				}
 				
 				var keys = this.map.layers.keys,
 					key = keys[this.gameState.playerLocation];
 				if (key) {
-					this.gameState.playerKeys[key] = true;
+					this.gameState.playerKeys[key.number] = true;
+					
+					this.resources.get(Event.KEY).play();
+					
 					delete keys[this.gameState.playerLocation]; //Clone before delete to store in player.
 				}
 			}
@@ -98,5 +117,9 @@ Tileshift.addLevel({
 		}
 		
 		this.resources.loaded(controller.runLevel.bind(controller, this));
-	}
+	},
+	
+	start: function(controller) {
+		return new this.Level(this, controller);
+	},
 });

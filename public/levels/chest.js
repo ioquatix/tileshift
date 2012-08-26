@@ -57,6 +57,8 @@ Tileshift.addLevel({
 				this.resources.get('Player.MOVE').play();
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
+					this.resources.get(Event.CHEST).play();
+					
 					controller.levelCompleted();
 				}
 			}

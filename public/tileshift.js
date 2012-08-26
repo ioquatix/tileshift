@@ -29,6 +29,7 @@ Tileshift = {
 		resourceLoader.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
 		resourceLoader.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
+		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
 	},
 	
 	run: function(config) {
@@ -139,6 +140,10 @@ Event = {
 	SOUTH: 3,
 	WEST: 4
 };
+
+Event.KEY = 'Event.KEY';
+Event.DOOR = 'Event.DOOR';
+Event.CHEST = 'Event.CHEST';
 
 // Get the Row column displacement for the given Event type.
 Event.displacement = function(e) {

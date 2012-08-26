@@ -146,8 +146,16 @@ function generatePath(map, p) {
 function generateMapDoorsKeys(map, numDoors){
 	for(i = 0; i < numDoors; i++){
 		var c = makeWaterColumn(map);
-		var door = placeDoor(map, c);
-		placeKey(map, door);
+		var door = placeDoor(map, c),
+			key = placeKey(map, door[0]);
+		
+		key.number = i;
+		door.number = i;
+		
+		key.door = door[1];
+		door[1].key = key;
+		
+		map.set(door[0], new Tile(0, Tile.BRIDGE));
 	}
 }
 
@@ -213,8 +221,11 @@ function placeDoor(map, c) {
 	
 	//Pick one of these doors.
 	var z = randomInt(dooroptions.length);
-	map.layers.doors[dooroptions[z]] = new DoorWidget();
-	return dooroptions[z];
+	var door = new DoorWidget();
+	
+	map.layers.doors[dooroptions[z]] = door;
+	
+	return [dooroptions[z], door];
 }
 
 function placeKey(map, door) {
@@ -224,8 +235,11 @@ function placeKey(map, door) {
 		p1 = new Vec2(randomIntRange(1, door[0]),randomIntRange(1, door[1]));
 		tile = map.get([p1.x,p1.y]);
 	}
-	map.layers.keys[[p1.x,p1.y]] = new KeyWidget(door);
-	return [p1.x, p1.y];
+	
+	var key = new KeyWidget();
+	map.layers.keys[[p1.x,p1.y]] = key;
+	
+	return key;
 }
 
 //Returns a good position for a key and a door.
