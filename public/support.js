@@ -44,19 +44,10 @@ function ResourceLoader (parent) {
 	this.counter = 0;
 }
 
-ResourceLoader.InvalidResourceNameError = function(name) {
-	this.name = name;
-	this.message = "Invalid resource name";
-}
-
-ResourceLoader.InvalidResourceNameError.prototype.toString = function() {
-	return this.message + ": " + this.name;
-}
-
 ResourceLoader.prototype.onLoad = function(name) {
 	this.counter -= 1;
 	
-	//console.log("Resource loaded", name);
+	console.log("Resource loaded", name);
 	
 	if (this.counter == 0) {
 		this.callback(this);
@@ -64,30 +55,37 @@ ResourceLoader.prototype.onLoad = function(name) {
 }
 
 ResourceLoader.prototype.loadResource = function(name, source, type) {
-	if (typeof(name) != 'string') {
-		throw new ResourceLoader.InvalidResourceNameError(name);
-	}
-	
 	this.counter += 1;
 	
 	var resource = new type();
 	this.resources[name] = resource;
 	
 	resource.addEventListener('load', this.onLoad.bind(this, name));
-	resource.addEventListener('canplaythrough', this.onLoad.bind(this, name));
 	
-	//console.log("Loading resource", type, name, source);
+	console.log("Loading resource", type, name, source);
 	resource.src = source;
-	
-	return resource;
 }
 
 ResourceLoader.prototype.loadImage = function(name, source) {
-	this.loadResource(name, source, Image);
+	this.counter += 1;
+	
+	var resource = new Image();
+	this.resources[name] = resource;
+	
+	resource.addEventListener('load', this.onLoad.bind(this, name));
+	
+	console.log("Loading image", name, source);
+	resource.src = source;
 }
 
 ResourceLoader.prototype.loadAudio = function(name, source) {
-	var resource = this.loadResource(name, source, Audio);
+	var resource = new Audio();
+	resource.preload = true;
+	
+	this.resources[name] = resource;
+	
+	console.log("Loading audio", name, source);
+	resource.src = source;
 }
 
 ResourceLoader.prototype.get = function(name) {
