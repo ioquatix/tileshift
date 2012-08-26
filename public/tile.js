@@ -42,6 +42,14 @@ Widget.PLAYER = 'Widget.PLAYER';
 Widget.CHEST = 'Widget.CHEST';
 Widget.KEY = 'Widget.KEY';
 
+/// *** Widget Layer ***
+Widget.Layer = function() {
+}
+
+Widget.Layer.prototype.get = function(coordinate) {
+	return this[coordinate];
+}
+
 // TileMap data model - contains tiles.
 function TileMap (size, edges) {
 	// [rows, cols]
