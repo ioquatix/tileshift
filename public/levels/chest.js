@@ -16,6 +16,8 @@ Tileshift.addLevel({
 			this.mapRenderer = new TileMapRenderer(this.resources, this.map.size);
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
+			this.searchRenderer = new SearchRenderer(this.mapRenderer.scale);
+
 			this.gameState = new GameState(this.map, [1, 1]);
 			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
 			
@@ -36,6 +38,7 @@ Tileshift.addLevel({
 			var generator = new Generator(this.map, this.gameState.events);
 			this.map = generator.evolve(10);
 			
+			this.searchRenderer.search = generator.search; 
 			this.gameState.map = this.map;
 			
 			this.redraw();
@@ -44,6 +47,7 @@ Tileshift.addLevel({
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
 			this.mapRenderer.display(context, [this.map, this.gameState]);
+			this.searchRenderer.display(context);
 		}
 		
 		this.onUserEvent = function(event) {
