@@ -216,12 +216,6 @@ function makeWaterColumn(map){
 	}
 	if(attemptNo != 1000){
 		for(r = 0; r < map.size[0]; r++){
-			var left = map.get([r,c-1]);
-			var right = map.get([r,c+1]);
-			 if(left || right){
-				map.set([r,c-1], new Tile(0, Platform.FLOOR));
-				map.set([r,c+1], new Tile(0, Platform.FLOOR));
-			} 
 			map.set([r,c], new Tile(-1, Platform.WATER));
 		}
 		return c;
