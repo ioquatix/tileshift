@@ -7,6 +7,8 @@ function PathFinder (delegate) {
 		return node.cost();
 	});
 	
+	this.best = null;
+	
 	this.state = {};
 }
 
@@ -26,16 +28,16 @@ PathFinder.Node.prototype.cost = function () {
 
 PathFinder.prototype.constructForwardPath = function (node, path) {
 	if (node.parent != null)
-		this.constructForwardPath(node, path);
+		this.constructForwardPath(node.parent, path);
 	
 	path.push(node);
 }
 
 PathFinder.prototype.currentPath = function () {
-	var path = new Array();
+	var path = [];
 	
-	if (this.open.top() != null)
-		constructForwardPath(this.open.top(), path);
+	if (this.best)
+		this.constructForwardPath(this.best, path);
 	
 	return path;
 }
