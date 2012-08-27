@@ -94,7 +94,7 @@ function generateRoomAt(map, p1) {
 		
 		//check bounds
 		if(p1.x < p2.x && p1.y < p2.y && p2.x - p1.x < MAX && p2.y - p1.y < MAX && p2.x - p1.x > MIN && p2.y - p1.y > MIN){
-			if(!checkCollision(map, p1, p2)){
+			if(!checkCollision(map, p1, p2) && !checkCollision(map, p1, new Vec2(p2.x, p2.y+1)) && !checkCollision(map, p1, new Vec2(p2.x, p2.y-1))){
 				break;
 			}
 		}
@@ -145,10 +145,21 @@ function generatePath(map, p) {
 //Places a given number of doors and keys on the map.
 function generateMapDoorsKeys(map, numDoors){
 	for(i = 0; i < numDoors; i++){
-		var c = makeWaterColumn(map);
-		var door = placeDoor(map, c),
+		var pos = makeWaterRow(map),
+			door = placeDoor(map, pos),
 			key = placeKey(map, door[0]);
-		
+		var dooroptions = [];
+	
+		for (r = 0; r < map.size[0]; r++) {
+			var tile = map.get([r, c]),
+				upright = map.get([r - 1, c + 1]),
+				downleft = map.get([r + 1, c - 1]),
+				left = map.get([r, c - 1]),
+				right = map.get([r, c + 1]);
+			if (tile && upright && downleft && left && right && !left.blocked() && !right.blocked()) {
+				dooroptions.push([r,c]);
+			}
+		}
 		key.number = i;
 		door.number = i;
 		
@@ -174,51 +185,120 @@ function generateRoomsOnMap(map, roomsList, numberOfRooms) {
 //Sticks between column 5 and Map.size-5.
 //It returns the column in which
 function makeWaterColumn(map){
-	var c = 0;
-	var isGoodColumn = false;
+	var c = 0,
+		isGoodColumn = false,
+		waterColumns = {},
+		attemptNo = 0;
+		
+	for (c = 0; c < map.size[1]; c++) {
+		var tile = map.get([0,c]);
+		if ( tile && tile.blocked() ) {
+			waterColumns[0,c] = true;
+			waterColumns[0,c+1] = true;
+			waterColumns[0,c-1] = true;
+			waterColumns[0,c+2] = true;
+			waterColumns[0,c-2] = true;
+			waterColumns[0,c+3] = true;
+			waterColumns[0,c-3] = true;
+		}
+	}
 	
-	while(!isGoodColumn){
+	while(!isGoodColumn && attemptNo < 1000){
 		c = randomIntRange(5, map.size[1] - 5);
 		for(r = 0; r < map.size[0]; r++){
 			//check if column intersects the center of a platform.
 			var tile = map.get([r,c]);
 			var left = map.get([r,c-1]);
 			var right = map.get([r,c+1]);
-			if(tile && right && left && !tile.blocked() && !left.blocked() && !right.blocked()){
+			var twoleft = map.get([r,c-2]);
+			var tworight = map.get([r,c+2]);
+			//Check tile conditions
+			if(!waterColumns[r,c] && tile && tile.special != Tile.END && right && left && !tile.blocked() && !left.blocked() && !right.blocked() && tworight && twoleft && !twoleft.blocked() && !tworight.blocked()){
 				isGoodColumn = true;
 			}
+			//Check widget conditions
+			if (map.layers.keys[[r,c]] || map.layers.doors[[r,c]]) {
+				isGoodColumn = false;
+				break;
+			}
 		}
+		attemptNo++;
 	}
+	
 	//If we want more than one door on a waterline, calculate that here.
 	for(r = 0; r < map.size[0]; r++){
 		var left = map.get([r,c-1]);
 		var right = map.get([r,c+1]);
-		if(left || right){
+		 if(left || right){
 			map.set([r,c-1], new Tile(0, Platform.DIRT));
 			map.set([r,c+1], new Tile(0, Platform.DIRT));
-		}
+		} 
 		map.set([r,c], new Tile(-1, Platform.WATER));
 	}
 	return c;
 }
 
-//For a column in the map, places a door at a random valid row. Returns the position of door.
-//A valid row is one which is on a platform, beside dirt and is at least one square away from
-//the edge of the platform.
-function placeDoor(map, c) {
-	var dooroptions = [];
-	
+//Make a random row into water.
+//Sticks between row 5 and Map.size-5.
+//It returns the column in which
+function makeWaterRow(map){
+	var r = 0,
+		isGoodRow = false,
+		waterRows = {},
+		attemptNo = 0;
+		
 	for (r = 0; r < map.size[0]; r++) {
-		var tile = map.get([r, c]);
-		var upright = map.get([r - 1, c + 1]);
-		var downleft = map.get([r + 1, c - 1]);
-		var left = map.get([r, c - 1]);
-		var right = map.get([r, c + 1]);
-		if (tile && upright && downleft && left && right && !left.blocked() && !right.blocked()) {
-			dooroptions.push([r,c]);
+		var tile = map.get([r,0]);
+		if ( tile && tile.blocked() ) {
+			waterRows[r, 0] = true;
+			waterRows[r+1, 0] = true;
+			waterRows[r-1, 0] = true;
+			waterRows[r+2, 0] = true;
+			waterRows[r-2, 0] = true;
+			waterRows[r+3, 0] = true;
+			waterRows[r-3, 0] = true;
 		}
 	}
 	
+	while(!isGoodRow && attemptNo < 1000){
+		r = randomIntRange(5, map.size[0] - 5);
+		for(c = 0; c < map.size[1]; c++){
+			//check if column intersects the center of a platform.
+			var tile = map.get([r,c]);
+			var left = map.get([r-1,c]);
+			var right = map.get([r+1,c]);
+			var twoleft = map.get([r-2,c]);
+			var tworight = map.get([r+2,c]);
+			//Check tile conditions
+			if(!waterRows[r,c] && tile && tile.special != Tile.END && right && left && !tile.blocked() && !left.blocked() && !right.blocked() && tworight && twoleft && !twoleft.blocked() && !tworight.blocked()){
+				isGoodRow = true;
+			}
+			//Check widget conditions
+			if (map.layers.keys[[r,c]] || map.layers.doors[[r,c]]) {
+				isGoodRow = false;
+				break;
+			}
+		}
+		attemptNo++;
+	}
+	
+	//If we want more than one door on a waterline, calculate that here.
+	for(c = 0; c < map.size[1]; c++){
+		var up = map.get([r-1,c]);
+		var down = map.get([r+1,c]);
+		if(left || right){
+			map.set([r-1,c], new Tile(0, Platform.DIRT));
+			map.set([r+1,c], new Tile(0, Platform.DIRT));
+		} 
+		map.set([r,c], new Tile(-1, Platform.WATER));
+	}
+	return r;
+}
+
+//For , places a door at a random valid option. Returns the position of door.
+//A valid row is one which is on a platform, beside dirt and is at least one square away from
+//the edge of the platform.
+function placeDoor(map, dooroptions) {	
 	//Pick one of these doors.
 	var z = randomInt(dooroptions.length);
 	var door = new DoorWidget();
@@ -229,8 +309,8 @@ function placeDoor(map, c) {
 }
 
 function placeKey(map, door) {
-	var p1  = new Vec2(randomIntRange(1, map.size[0]),randomIntRange(1, door[1] - 3));
-	var tile = map.get([p1.x,p1.y]);
+	var p1  = new Vec2(randomIntRange(1, map.size[0]),randomIntRange(1, door[1] - 3)),
+		tile = map.get([p1.x,p1.y]);
 	while (!tile || tile.blocked()) {
 		p1 = new Vec2(randomIntRange(1, door[0]),randomIntRange(1, door[1]));
 		tile = map.get([p1.x,p1.y]);
@@ -241,14 +321,3 @@ function placeKey(map, door) {
 	
 	return key;
 }
-
-//Returns a good position for a key and a door.
-//Good position is defined as:
-//The player cannot pass the door without using the key
-//The player can access the key without passing through the door.
-function generateKeyDoorPosition(map) {
-	var keyRoom = rooms[randomInt(rooms.length)];
-	
-	return [[p1.x, p1.y], [, ]];
-}
-
