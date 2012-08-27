@@ -1,7 +1,7 @@
 
 function DoorWidget() {
 	Widget.call(this, -1, Widget.DOOR);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.key = null;
 }
@@ -11,7 +11,7 @@ DoorWidget.prototype.constructor = DoorWidget;
 
 function KeyWidget() {
 	Widget.call(this, 0, Widget.KEY);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.door = null;
 }
@@ -51,7 +51,7 @@ Tileshift.addLevel({
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
 		this.resources.loadAudio(Event.KEY, 'effects/Key.wav');
 		
-		this.onBegin = function() {
+		this.onStart = function() {
 			var map = new TileMap([20, 30]);
 			map.set([1, 1], new Tile(0, Tile.START))
 			map.set([18, 28], new Tile(0, Tile.FLOOR, Tile.END));
@@ -61,8 +61,12 @@ Tileshift.addLevel({
 			this.mapRenderer = new TileMapRenderer(this.resources, map.size);
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
+
 			this.gameState = new GameState(map, [1, 1]);
-			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
+			map.layers.portals = new Widget.Layer();
+			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
+
 			this.gameState.playerKeys = {};
 			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 			map.rooms = [];
@@ -70,6 +74,10 @@ Tileshift.addLevel({
 			generateRoomsOnMap(map, map.rooms, 4);
 			generateMapDoorsKeys(this.gameState, map, 1);
 			
+			controller.showOverlay(document.getElementById('doors'));
+		}
+		
+		this.onResume = function() {
 			this.redraw();
 			
 			if (!this.interval) {
@@ -94,9 +102,12 @@ Tileshift.addLevel({
 		}
 		
 		this.redraw = function() {
-			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.keys]);
-			this.controllerRenderer.display(context, controller);
+			var context = controller.canvas.getContext('2d'),
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.doors, this.gameState.map.layers.keys, this.gameState];
+			
+			this.mapRenderer.display(context, layers);
+			
+			this.controllerRenderer.display(context, controller, this.gameState.playerKeys);
 		}
 		
 		this.onUserEvent = function(event) {
@@ -127,7 +138,7 @@ Tileshift.addLevel({
 				var keys = this.gameState.map.layers.keys,
 					key = keys[this.gameState.playerLocation];
 				if (key) {
-					this.gameState.playerKeys[key.number] = true;
+					this.gameState.playerKeys[key.number] = key;
 					
 					this.resources.get(Event.KEY).play();
 					

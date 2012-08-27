@@ -28,9 +28,9 @@ Tileshift = {
 		resourceLoader.loadImage(Tile.START, 'tiles/Wall Block.png');
 		resourceLoader.loadImage(Tile.END, 'tiles/Wood Block.png');
 		resourceLoader.loadImage(Widget.PLAYER, 'tiles/Character Cat Girl.png');
-		resourceLoader.loadImage(Widget.CHEST, 'tiles/Chest Closed.png');
+		resourceLoader.loadImage(Widget.CHEST, 'tiles/Exit.png');
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
-		resourceLoader.loadImage(Widget.STAR, 'tiles/Star.png');
+		resourceLoader.loadImage(Widget.STAR, 'tiles/Heart.png');
 		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
 		resourceLoader.loadImage(Tile.WATER, 'tiles/Water Block.png');
 		resourceLoader.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
@@ -56,33 +56,40 @@ Tileshift = {
 		// Once we have loaded all resources, start the game:
 		controller.resources.loaded(controller.resetLevel.bind(controller));
 		
-		window.addEventListener('keydown', this.handleUserInput.bind(this), false);
+		window.addEventListener('keydown', this.handleUserInput.bind(controller), false);
+		window.addEventListener('resize', controller.rescaleCanvas.bind(controller), false);
 	},
 	
 	handleUserInput: function(e) {
-		if (!this.controller) return;
-		
 		switch (e.charCode ? e.charCode : e.keyCode) {
 		case 37: //left arrow
-			this.controller.handleEvent(Event.WEST); break;
+			this.handleEvent(Event.WEST); break;
 		case 38: //top arrow
-			this.controller.handleEvent(Event.NORTH); break;
+			this.handleEvent(Event.NORTH); break;
 		case 39: //right arrow
-			this.controller.handleEvent(Event.EAST); break;
+			this.handleEvent(Event.EAST); break;
 		case 40: //down arrow
-			this.controller.handleEvent(Event.SOUTH); break;
+			this.handleEvent(Event.SOUTH); break;
 		default:
 			return;
 		}
 		
 		event.stopPropagation();
-	}
+	},
 };
 
 /// *** Tileshift Controller ***
 /// This class is responsible for controlling high level game progress.
 Tileshift.Controller = function(canvas, levels) {
 	this.canvas = canvas;
+	
+	// Setup the overlay:
+	this.overlay = document.createElement('div');
+	this.overlay.style.display = 'none';
+	this.overlay.className = 'overlay';
+	this.canvas.parentNode.appendChild(this.overlay);
+	this.overlay.addEventListener('click', this.hideOverlay.bind(this));
+	
 	this.levels = levels;
 	
 	this.maximumLives = 5;
@@ -91,6 +98,32 @@ Tileshift.Controller = function(canvas, levels) {
 	this.resources = new ResourceLoader();
 	
 	this.resetGame();
+}
+
+Tileshift.Controller.prototype.showOverlay = function(element) {
+	this.overlay.style.display = 'block';
+	//this.overlay.style.width = this.canvas.width + 'px';
+	//this.overlay.style.height = this.canvas.height + 'px';
+	//this.overlay.style.top = this.canvas.offsetTop + 'px';
+	//this.overlay.style.left = this.canvas.offsetLeft + 'px';
+	this.overlay.style.opacity = 1.0;
+	
+	while (this.overlay.childNodes.length > 0)
+		this.overlay.removeChild(this.overlay.firstChild);
+	
+	this.overlay.appendChild(element.cloneNode(true));
+}
+
+Tileshift.Controller.prototype.hideOverlay = function() {
+	this.overlay.style.opacity = 0.0;
+	
+	while (this.overlay.childNodes.length > 0)
+		this.overlay.removeChild(this.overlay.firstChild);
+	
+	console.log('hideOverlay', this.currentLevel);
+	if (this.currentLevel && this.currentLevel.onResume) {
+		this.currentLevel.onResume();
+	}
 }
 
 Tileshift.Controller.prototype.finishLevel = function() {
@@ -124,7 +157,12 @@ Tileshift.Controller.prototype.handleEvent = function(event) {
 
 Tileshift.Controller.prototype.runLevel = function(level) {
 	this.currentLevel = level;
-	level.onBegin();
+	
+	if (level.onStart) {
+		level.onStart();
+	} else {
+		level.onBegin();
+	}
 }
 
 Tileshift.Controller.prototype.updateScore = function(amount) {
@@ -146,9 +184,10 @@ Tileshift.Controller.prototype.updateLives = function(amount) {
 }
 
 Tileshift.Controller.prototype.levelCompleted = function() {
+	this.finishLevel();
 	this.currentLevelIndex = (this.currentLevelIndex + 1) % this.levels.length;
 	
-	this.resetLevel();
+	setTimeout(this.resetLevel.bind(this), 1000);
 }
 
 Tileshift.Controller.prototype.restartGame = function() {
@@ -167,14 +206,35 @@ Tileshift.Controller.prototype.levelFailed = function() {
 	}
 }
 
+Tileshift.Controller.prototype.rescaleCanvas = function() {
+	var desiredSize = [this.canvas.parentNode.offsetHeight, this.canvas.parentNode.offsetWidth];
+	
+	var displayRatio = this.pixelSize[1] / this.pixelSize[0],
+		screenRatio = desiredSize[1] / desiredSize[0];
+	
+	if (displayRatio < screenRatio) {
+		desiredSize[1] = desiredSize[0] * displayRatio;
+	} else {
+		desiredSize[0] = desiredSize[1] * (1.0 / displayRatio);
+	}
+	
+	this.canvas.style.width = desiredSize[1] + 'px';
+	this.canvas.style.height = desiredSize[0] + 'px';
+	
+	var fontScale = (desiredSize[0] * desiredSize[1]) / (1600.0 * 1200.0);
+	this.overlay.style.fontSize = (fontScale * 100.0) + '%';
+	
+	console.log('fontSize', this.overlay.style.fontSize);
+}
+
 Tileshift.Controller.prototype.resizeCanvas = function(pixelSize) {
+	this.pixelSize = pixelSize;
+	
 	// Set coordinate size:
 	this.canvas.width = pixelSize[1];
 	this.canvas.height = pixelSize[0];
-
-	// Set element size:
-	this.canvas.style.width = pixelSize[1] + 'px';
-	this.canvas.style.height = pixelSize[0] + 'px';
+	
+	this.rescaleCanvas();
 }
 
 /// *** enum Event ***
@@ -217,8 +277,6 @@ function GameState(map, location) {
 	this.map = map;
 	this.playerLocation = location;
 	this.events = [[Event.NONE, location]];
-	
-	this.widgets = {};
 }
 
 GameState.prototype.pushEvent = function(event) {
@@ -238,15 +296,13 @@ GameState.prototype.isValidEvent = function(event) {
 GameState.prototype.get = function(coordinate) {
 	if (Vec2.equals(coordinate, this.playerLocation)) {
 		return new Widget(0, Widget.PLAYER);
-	} else {
-		return this.widgets[coordinate];
 	}
 }
 
 // Display the grid on a canvas object
 function ControllerRenderer (resources, size, scale) {
 	this.size = size;
-	this.scale = scale || [40, 50];
+	this.scale = scale || [80, 100];
 	this.resources = resources;
 }
 
@@ -266,14 +322,16 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 	context.strokeStyle = '#aaaaff';
 	context.fillStyle = backgroundStyle;
 	
-	roundedRectPath(context, 10, 10, pixelSize[1] - 20, pixelSize[0] - 20, 5);
+	var inset = this.scale[0] / 4;
+	
+	roundedRectPath(context, inset, inset, pixelSize[1] - inset * 2, pixelSize[0] - inset * 2, inset / 2);
 	context.fill();
 	context.stroke();
 	
 	context.fillStyle = 'white';
-	context.font = 'italic bold 30px sans-serif';
+	context.font = 'italic bold ' + this.scale[0] + 'px sans-serif';
 	context.textBaseline = 'bottom';
-	context.fillText('Score: ' + score, 30, 50);
+	context.fillText('Score: ' + score, inset * 2, pixelSize[0] - inset);
 	
 	context.save();
 	var image = this.resources.get(Widget.STAR);
@@ -283,7 +341,7 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 			context.globalAlpha = 0.2;
 		}
 		
-		context.drawImage(image, pixelSize[1] - (this.scale[1] * (i + 1.5) * 0.8), -6, image.width * 0.74, image.height * 0.74);
+		context.drawImage(image, pixelSize[1] - (this.scale[1] * (i + 1.5) * 0.8), -3, image.width * 0.74, image.height * 0.74);
 	}
 	context.restore();
 	

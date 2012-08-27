@@ -1,7 +1,7 @@
 
 function DoorWidget() {
 	Widget.call(this, -1, Widget.DOOR);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.key = null;
 }
@@ -11,7 +11,7 @@ DoorWidget.prototype.constructor = DoorWidget;
 
 function KeyWidget() {
 	Widget.call(this, 0, Widget.KEY);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.door = null;
 }
@@ -75,8 +75,12 @@ Tileshift.addLevel({
 			this.mapRenderer = new TileMapRenderer(this.resources, map.size);
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
+
 			this.gameState = new GameState(map, [1, 1]);
-			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
+			map.layers.portals = new Widget.Layer();
+			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
+
 			this.gameState.playerKeys = {};
 			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 			map.rooms = [];
@@ -109,17 +113,18 @@ Tileshift.addLevel({
 		}
 		
 		this.redraw = function() {
-			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.stars, this.gameState.map.layers.keys]);
-			this.controllerRenderer.display(context, controller);
+			var context = controller.canvas.getContext('2d'),
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.doors, this.gameState.map.layers.keys, this.gameState.map.layers.stars, this.gameState];
+			
+			this.mapRenderer.display(context, layers);
+			
+			this.controllerRenderer.display(context, controller, this.gameState.playerKeys);
 		}
 		
 		this.onUserEvent = function(event) {
 			var location = Vec2.add(this.gameState.playerLocation, Event.displacement(event)),
 				doors = this.gameState.map.layers.doors,
 				door = doors[location];
-			
-
 			
 			if (door) {
 				console.log('door', door, this.gameState.playerKeys);
@@ -149,7 +154,7 @@ Tileshift.addLevel({
 				var keys = this.gameState.map.layers.keys,
 					key = keys[this.gameState.playerLocation];
 				if (key) {
-					this.gameState.playerKeys[key.number] = true;
+					this.gameState.playerKeys[key.number] = key;
 					
 					this.resources.get(Event.KEY).play();
 					

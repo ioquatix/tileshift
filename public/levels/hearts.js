@@ -1,8 +1,7 @@
 
 Tileshift.addLevel({
-	name: 'chest',
-	description: 'Find the key to open the chest!',
-	difficulty: 1.0,
+	name: 'hearts',
+	difficulty: 0.0,
 	
 	randomFloorMutation: function(generator, map) {
 		for (var i = 0; i < 4; i++) {
@@ -42,7 +41,7 @@ Tileshift.addLevel({
 		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
 		this.resources.loadAudio(Event.STAR, 'effects/Star.wav');
 		
-		this.onBegin = function() {
+		this.onStart = function() {
 			var map = new TileMap([20, 30]);
 			map.set([1, 1], new Tile(0, Tile.START))
 			map.set([18, 28], new Tile(0, Tile.FLOOR, Tile.END));
@@ -56,8 +55,13 @@ Tileshift.addLevel({
 			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 
 			this.gameState = new GameState(map, [1, 1]);
-			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
+			map.layers.portals = new Widget.Layer();
+			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
 			
+			controller.showOverlay(document.getElementById('start'));
+		}
+		
+		this.onResume = function() {
 			this.redraw();
 			
 			if (!this.interval) {
@@ -87,8 +91,10 @@ Tileshift.addLevel({
 		}
 		
 		this.redraw = function() {
-			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.stars]);
+			var context = controller.canvas.getContext('2d'),
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.stars, this.gameState];
+			
+			this.mapRenderer.display(context, layers);
 			
 			this.controllerRenderer.display(context, controller);
 			//this.searchRenderer.display(context);

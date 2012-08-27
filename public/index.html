@@ -8,21 +8,46 @@
 		<style type="text/css" media="screen">
 			body {
 				color: white;
-				background-color: #000;
+				background-color: black;
 				
 				font-family: 'Eagle Lake', cursive;
+				
+				font-size: 180%;
+			}
+			
+			#container {
+				text-align: center;
+				position: absolute;
+				left: 0; right: 0; top: 0; bottom: 0;
+			}
+			
+			#container canvas {
+			}
+			
+			#container .overlay {
+				position: fixed;
+				left: 0; right: 0; top: 0; bottom: 0;
+				
+				overflow: auto;
+				
+				background-color: black;
+				opacity: 0.0;
+				
+				box-sizing: border-box;
+				
+				-webkit-transition: opacity 2.0s;
+				box-model: border-box;
+				padding: 3em;
+			}
+			
+			small {
+				color: #00C;
 			}
 		</style>
 	</head>
 	<body>
-		<a href="https://github.com/ioquatix/tileshift"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork me on GitHub"></a>
-		
-		<div style="text-align: center">
-			<h1>Tile Shift</h1>
-			
-			<p>You need to reach the chest. The game world will evolve to both assist and challenge you..</p>
-			
-			<canvas id="tileshift" style="border: 1px solid black; width: 0; height: 0;">
+		<div id="container">
+			<canvas id="tileshift" style="width: 0px; height: 0px">
 				<p>Your browser doesn't support canvas.</p>
 			</canvas>
 		</div>
@@ -45,7 +70,7 @@
 		<script src="tileshift.js" type="text/javascript"></script>
 		
 		<!-- Levels -->
-		<script src="levels/chest.js" type="text/javascript"></script>
+		<script src="levels/hearts.js" type="text/javascript"></script>
 		<script src="levels/doorsLevel1.js" type="text/javascript"></script>
 		<script src="levels/doorsLevel2.js" type="text/javascript"></script>
 		<script src="levels/doorsLevel3.js" type="text/javascript"></script>
@@ -56,5 +81,35 @@
 				Tileshift.run();
 			}
 		</script>
+		
+		<div style="display: none">
+			<div id="start">
+				<h1>Tile Shift</h1>
+				
+				<img src="tiles/Character Cat Girl.png" style="float: right" />
+				
+				<p>The last thing you remember was stumbling out of the Castle Pub... it is pitch black... "Where am I" you think to yourself?</p>
+				
+				<p>Your thoughts echoes in the void... you feel something cold and damp against the side of your face.</p>
+				
+				<p>Slowly your vision returns and you find that tiles are appearing around you. "What is this strange place?".</p>
+				
+				<p>"How do I get out of here!?"</p>
+				
+				<small>[click to continue]</small>
+			</div>
+			
+			<div id="doors">
+				<p>Your head feels like it is starting to clear... was it those strange power-ups?</p>
+				
+				<p>Looking across the dark cavernous space, you see a key. Perhaps it will help you find your way out?</p>
+				
+				<small>[click to continue]</small>
+			</div>
+		
+			<div id="gameover">
+				<h1>Game Over</h1>
+			</div>
+		</div>
 	</body>
 </html>

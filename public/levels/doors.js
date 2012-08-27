@@ -1,7 +1,7 @@
 
 function DoorWidget() {
 	Widget.call(this, -1, Widget.DOOR);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.key = null;
 }
@@ -11,7 +11,7 @@ DoorWidget.prototype.constructor = DoorWidget;
 
 function KeyWidget() {
 	Widget.call(this, 0, Widget.KEY);
-	this.offset = -10;
+	this.offset = -20;
 	
 	this.door = null;
 }
@@ -62,10 +62,12 @@ Tileshift.addLevel({
 			this.mapRenderer = new TileMapRenderer(this.resources, map.size);
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
-			this.gameState = new GameState(map, [1, 1]);
 			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 
-			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
+			this.gameState = new GameState(map, [1, 1]);
+			map.layers.portals = new Widget.Layer();
+			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
+
 			this.gameState.playerKeys = {};
 			
 			map.rooms = [];
@@ -97,8 +99,10 @@ Tileshift.addLevel({
 		}
 		
 		this.redraw = function() {
-			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.keys]);
+			var context = controller.canvas.getContext('2d'),
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.doors, this.gameState.map.layers.keys, this.gameState];
+			
+			this.mapRenderer.display(context, layers);
 			
 			this.controllerRenderer.display(context, controller, this.gameState.playerKeys);
 		}
@@ -109,8 +113,6 @@ Tileshift.addLevel({
 				door = doors[location];
 			
 			if (door) {
-				console.log('door', door, this.gameState.playerKeys);
-				
 				if (this.gameState.playerKeys[door.key.number]) {
 					delete this.gameState.playerKeys[door.key];
 					delete doors[location];

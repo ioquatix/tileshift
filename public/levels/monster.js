@@ -53,7 +53,9 @@ Tileshift.addLevel({
 			this.searchRenderer = new SearchRenderer(this.mapRenderer.scale);
 
 			this.gameState = new GameState(map, [10, 15]);
-			
+			map.layers.portals = new Widget.Layer();
+			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
+
 			this.redraw();
 			
 			if (!this.interval) {
@@ -100,9 +102,11 @@ Tileshift.addLevel({
 		}
 		
 		this.redraw = function() {
-			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.monsters]);
-			this.searchRenderer.display(context);
+			var context = controller.canvas.getContext('2d'),
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.monsters, this.gameState];
+			
+			this.mapRenderer.display(context, layers);
+			
 			this.controllerRenderer.display(context, controller);
 		}
 		
