@@ -22,9 +22,9 @@ KeyWidget.prototype.constructor = KeyWidget;
 Tile.BRIDGE = 'Tile.BRIDGE';
 
 Tileshift.addLevel({
-	name: 'doors',
+	name: 'doorsLevel3',
 	description: 'Find you way through the doors, to open the chest!',
-	difficulty: 1.2,
+	difficulty: 2.3,
 	
 	randomFloorMutation: function(generator, map) {
 		for (var i = 0; i < 4; i++) {
@@ -44,6 +44,19 @@ Tileshift.addLevel({
 		}
 	},
 	
+	randomStarMutation: function(generator, map) {
+		var r = randomInt(11) - 5, c = randomInt(11) - 5;
+
+		r += generator.currentPosition[0];
+		c += generator.currentPosition[1];
+
+		var tile = map.get([r, c]);
+		
+		if (tile && !tile.blocked()) {
+			map.layers.stars[[r, c]] = new Widget(0, Widget.STAR);
+		}
+	},
+	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
 		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
@@ -59,6 +72,7 @@ Tileshift.addLevel({
 			map.set([18, 28], new Tile(0, Tile.FLOOR, Tile.END));
 			map.layers.doors = new Widget.Layer();
 			map.layers.keys = new Widget.Layer();
+			map.layers.stars = new Widget.Layer();
 
 			this.mapRenderer = new TileMapRenderer(this.resources, map.size);
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
@@ -69,8 +83,8 @@ Tileshift.addLevel({
 			
 			map.rooms = [];
 			map.doors = [];
-			generateRoomsOnMap(map, map.rooms, 4);
-			generateMapDoorsKeys(this.gameState, map, 15);
+			generateRoomsOnMap(map, map.rooms, 7);
+			generateMapDoorsKeys(this.gameState, map, 3);
 			
 			this.redraw();
 			
@@ -86,10 +100,11 @@ Tileshift.addLevel({
 		this.onTick = function() {
 			var goals = this.gameState.map.getSpecials(Tile.END).concat(
 					this.gameState.map.layers.keys.allLocations(), 
-					this.gameState.map.layers.doors.allLocations()),
+					this.gameState.map.layers.doors.allLocations(),
+					this.gameState.map.layers.stars.allLocations()),
 				generator = new Generator(this.gameState.map, goals, this.gameState.events);
 			generator.mutations.push(config.randomFloorMutation);
-			
+			generator.mutations.push(config.randomStarMutation);
 			this.gameState.map = generator.evolve(10);
 			
 			this.redraw();
@@ -97,13 +112,15 @@ Tileshift.addLevel({
 		
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
-			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.keys]);
+			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.stars, this.gameState.map.layers.keys]);
 		}
 		
 		this.onUserEvent = function(event) {
 			var location = Vec2.add(this.gameState.playerLocation, Event.displacement(event)),
 				doors = this.gameState.map.layers.doors,
 				door = doors[location];
+			
+
 			
 			if (door) {
 				console.log('door', door, this.gameState.playerKeys);
@@ -118,11 +135,14 @@ Tileshift.addLevel({
 				}
 			} else if (this.gameState.isValidEvent(event)) {
 				this.gameState.pushEvent(event);
-				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.CHEST).play();
 					
 					controller.levelCompleted();
+				}
+							
+				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
+						delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 				}
 				
 				var keys = this.gameState.map.layers.keys,

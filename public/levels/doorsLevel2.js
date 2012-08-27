@@ -22,9 +22,9 @@ KeyWidget.prototype.constructor = KeyWidget;
 Tile.BRIDGE = 'Tile.BRIDGE';
 
 Tileshift.addLevel({
-	name: 'doors',
+	name: 'doorsLevel2',
 	description: 'Find you way through the doors, to open the chest!',
-	difficulty: 1.2,
+	difficulty: 2.2,
 	
 	randomFloorMutation: function(generator, map) {
 		for (var i = 0; i < 4; i++) {
@@ -69,8 +69,8 @@ Tileshift.addLevel({
 			
 			map.rooms = [];
 			map.doors = [];
-			generateRoomsOnMap(map, map.rooms, 4);
-			generateMapDoorsKeys(this.gameState, map, 15);
+			generateRoomsOnMap(map, map.rooms, 6);
+			generateMapDoorsKeys(this.gameState, map, 3);
 			
 			this.redraw();
 			
