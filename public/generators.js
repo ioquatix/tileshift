@@ -145,21 +145,10 @@ function generatePath(map, p) {
 //Places a given number of doors and keys on the map.
 function generateMapDoorsKeys(map, numDoors){
 	for(i = 0; i < numDoors; i++){
-		var pos = makeWaterRow(map),
+		var pos = makeWaterColumn(map),
 			door = placeDoor(map, pos),
 			key = placeKey(map, door[0]);
-		var dooroptions = [];
-	
-		for (r = 0; r < map.size[0]; r++) {
-			var tile = map.get([r, c]),
-				upright = map.get([r - 1, c + 1]),
-				downleft = map.get([r + 1, c - 1]),
-				left = map.get([r, c - 1]),
-				right = map.get([r, c + 1]);
-			if (tile && upright && downleft && left && right && !left.blocked() && !right.blocked()) {
-				dooroptions.push([r,c]);
-			}
-		}
+		
 		key.number = i;
 		door.number = i;
 		
@@ -295,10 +284,22 @@ function makeWaterRow(map){
 	return r;
 }
 
-//For , places a door at a random valid option. Returns the position of door.
+//For a column , places a door at a random valid option. Returns the position of door.
 //A valid row is one which is on a platform, beside dirt and is at least one square away from
 //the edge of the platform.
-function placeDoor(map, dooroptions) {	
+function placeDoor(map, c) {	
+		var dooroptions = [];
+	
+		for (r = 0; r < map.size[0]; r++) {
+			var tile = map.get([r, c]),
+				upright = map.get([r - 1, c + 1]),
+				downleft = map.get([r + 1, c - 1]),
+				left = map.get([r, c - 1]),
+				right = map.get([r, c + 1]);
+			if (tile && upright && downleft && left && right && !left.blocked() && !right.blocked()) {
+				dooroptions.push([r,c]);
+			}
+		}	
 	//Pick one of these doors.
 	var z = randomInt(dooroptions.length);
 	var door = new DoorWidget();
