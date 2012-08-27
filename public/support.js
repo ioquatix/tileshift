@@ -113,3 +113,8 @@ function randomInt(max) {
 function randomIntRange(min, max){
 	return Math.floor(Math.random() * (max - min) + min);
 }
+
+function convertLocationKey(location) {
+	location = location.split(',');
+	return [parseInt(location[0]), parseInt(location[1])]
+}

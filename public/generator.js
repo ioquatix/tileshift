@@ -1,8 +1,9 @@
 
 /// *** class Generator ***
 /// This is the core of the genetic algorithm, including mutation and fitness functions.
-function Generator (map, events, iterations) {
+function Generator (map, goals, events, iterations) {
 	this.map = map;
+	this.goals = goals;
 	this.events = events;
 	this.currentPosition = events[events.length - 1][1];
 	
@@ -21,9 +22,7 @@ Generator.prototype.mutate = function () {
 }
 
 Generator.prototype.score = function (map) {
-	var goals = map.getSpecials(Tile.END);
-	
-	var delegate = new TileMapSearch(map, [goals[0][0]]);
+	var delegate = new TileMapSearch(map, this.goals);
 	var search = new PathFinder(delegate), worst = (map.size[0] + map.size[1]) / 8;
 	
 	delegate.prime(search, this.currentPosition);

@@ -84,7 +84,10 @@ Tileshift.addLevel({
 		}
 		
 		this.onTick = function() {
-			var generator = new Generator(this.map, this.gameState.events);
+			var goals = this.gameState.map.getSpecials(Tile.END).concat(
+					this.gameState.map.layers.keys.allLocations(), 
+					this.gameState.map.layers.doors.allLocations()),
+				generator = new Generator(this.map, goals, this.gameState.events);
 			generator.mutations.push(config.randomFloorMutation);
 			
 			this.map = generator.evolve(10);

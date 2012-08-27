@@ -51,6 +51,10 @@ Widget.STAR = 'Widget.STAR';
 Widget.Layer = function() {
 }
 
+Widget.Layer.prototype.set = function(coordinate, widget) {
+	this[coordinate] = widget;
+}
+
 Widget.Layer.prototype.get = function(coordinate) {
 	return this[coordinate];
 }
@@ -59,11 +63,24 @@ Widget.Layer.prototype.duplicate = function() {
 	var copy = new Widget.Layer();
 	
 	for (var key in this) {
-		//if (this.hasOwnProperty(key))
-		copy[key] = this[key];
+		if (this.hasOwnProperty(key)) {
+			copy[key] = this[key];
+		}
 	}
 	
 	return copy;
+}
+
+Widget.Layer.prototype.allLocations = function() {
+	var locations = [];
+	
+	for (var key in this) {
+		if (this.hasOwnProperty(key)) {
+			locations.push(convertLocationKey(key));
+		}
+	}
+	
+	return locations;
 }
 
 // TileMap data model - contains tiles.
@@ -111,7 +128,7 @@ TileMap.prototype.getSpecials = function (special) {
 			var tile = this.get([r, c]);
 				
 			if (tile && tile.special == special)
-			specials.push([[r, c], tile])
+				specials.push([r, c]);
 		}
 	}
 	
@@ -132,8 +149,16 @@ TileMapSearch.prototype.addStepsFrom = function (pathFinder, node) {
 		var tile = this.map.get(next);
 		
 		if (tile && !tile.blocked()) {
-			var estimateToGoal = this.estimatePathCost(next, goal);
-			pathFinder.addStep(node, next, 1.0, estimateToGoal);
+			var minimumEstimate = Infinity;
+			
+			for (var j in this.goals) {
+				var estimateToGoal = this.estimatePathCost(next, this.goals[j]);
+				
+				if (estimateToGoal < minimumEstimate)
+					minimumEstimate = estimateToGoal;
+			}
+			
+			pathFinder.addStep(node, next, 1.0, minimumEstimate);
 		}
 	}
 }
@@ -173,7 +198,7 @@ function TileMapRenderer (resources, size, scale) {
 }
 
 TileMapRenderer.prototype.pixelSize = function() {
-	return [this.size[0] * this.scale[0], this.size[1] * this.scale[1]];
+	return [(this.size[0] + 1) * this.scale[0], this.size[1] * this.scale[1]];
 }
 
 TileMapRenderer.prototype.display = function (context, layers) {
@@ -199,7 +224,7 @@ TileMapRenderer.prototype.display = function (context, layers) {
 					
 					if (image) {
 						offset = (this.scale[0] - image.height) + tile.offset;
-						context.drawImage(image, c*this.scale[1], r*this.scale[0] + offset);
+						context.drawImage(image, c*this.scale[1], (r+1)*this.scale[0] + offset);
 					}
 				}
 			}

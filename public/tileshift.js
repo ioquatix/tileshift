@@ -146,6 +146,7 @@ Event = {
 Event.KEY = 'Event.KEY';
 Event.DOOR = 'Event.DOOR';
 Event.CHEST = 'Event.CHEST';
+Event.STAR = 'Event.STAR';
 
 // Get the Row column displacement for the given Event type.
 Event.displacement = function(e) {

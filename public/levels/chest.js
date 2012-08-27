@@ -28,13 +28,17 @@ Tileshift.addLevel({
 		r += generator.currentPosition[0];
 		c += generator.currentPosition[1];
 
-		if (map.get([r, c]) != null)
+		var tile = map.get([r, c]);
+		
+		if (tile) {
 			map.layers.stars[[r, c]] = new Widget(0, Widget.STAR);
+		}
 	},
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
 		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
+		this.resources.loadAudio(Event.STAR, 'effects/Star.wav');
 		
 		this.onBegin = function() {
 			var map = new TileMap([20, 30]);
@@ -65,7 +69,10 @@ Tileshift.addLevel({
 		}
 		
 		this.onTick = function() {
-			var generator = new Generator(this.gameState.map, this.gameState.events);
+			var goals = this.gameState.map.getSpecials(Tile.END).concat(this.gameState.map.layers.stars.allLocations());
+			
+			var generator = new Generator(this.gameState.map, goals, this.gameState.events);
+			
 			generator.mutations.push(config.randomFloorMutation);
 			generator.mutations.push(config.randomStarMutation);
 			
@@ -89,7 +96,7 @@ Tileshift.addLevel({
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
-					this.resources.get(Event.CHEST).play();
+					this.resources.get(Event.STAR).play();
 				}
 				
 				this.resources.get('Player.MOVE').play();

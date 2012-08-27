@@ -94,13 +94,6 @@ function SearchRenderer (scale) {
 	this.search = null;
 }
 
-function convertLocationKey(loc) {
-	loc = loc.split(',');
-	loc[0] = parseInt(loc[0]);
-	loc[1] = parseInt(loc[1]);
-	return loc;
-}
-
 SearchRenderer.prototype.display = function (context) {
 	if (!this.search) return;
 	
