@@ -31,7 +31,7 @@ Tileshift = {
 		resourceLoader.loadImage(Widget.CHEST, 'tiles/Exit.png');
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
 		resourceLoader.loadImage(Widget.STAR, 'tiles/Heart.png');
-		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
+		resourceLoader.loadAudio(Event.EXIT, 'effects/Chest.wav');
 		resourceLoader.loadImage(Tile.WATER, 'tiles/Water Block.png');
 		resourceLoader.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		resourceLoader.loadAudio(Event.DAMAGE, 'effects/Damage.wav');
@@ -248,7 +248,7 @@ Event = {
 
 Event.KEY = 'Event.KEY';
 Event.DOOR = 'Event.DOOR';
-Event.CHEST = 'Event.CHEST';
+Event.EXIT = 'Event.EXIT';
 Event.HEART = 'Event.HEART';
 Event.DAMAGE = 'Event.DAMAGE';
 Event.MOVE = 'Event.MOVE';
