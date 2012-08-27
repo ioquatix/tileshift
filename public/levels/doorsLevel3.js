@@ -64,7 +64,7 @@ Tileshift.addLevel({
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
 		this.resources.loadAudio(Event.KEY, 'effects/Key.wav');
 		
-		this.onBegin = function() {
+		this.onStart = function() {
 			var map = new TileMap([20, 30]);
 			map.set([1, 1], new Tile(0, Tile.START))
 			map.set([18, 28], new Tile(0, Tile.FLOOR, Tile.END));
@@ -88,6 +88,10 @@ Tileshift.addLevel({
 			generateRoomsOnMap(map, map.rooms, 7);
 			generateMapDoorsKeys(this.gameState, map, 3);
 			
+			controller.showOverlay(document.getElementById('keys'));
+		}
+			
+		this.onResume = function() {
 			this.redraw();
 			
 			if (!this.interval) {

@@ -58,6 +58,8 @@ Tileshift.addLevel({
 			map.layers.portals = new Widget.Layer();
 			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
 			
+			this.firstHeart = true;
+			
 			controller.showOverlay(document.getElementById('start'));
 		}
 		
@@ -69,11 +71,13 @@ Tileshift.addLevel({
 			}
 		}
 		
-		this.onFinish = function() {
+		this.pause = function() {
 			if (this.interval) clearInterval(this.interval);
 			
 			this.interval = null;
 		}
+		
+		this.onFinish = this.pause;
 		
 		this.onTick = function() {
 			var goals = this.gameState.map.getSpecials(Tile.END).concat(this.gameState.map.layers.stars.allLocations());
@@ -110,6 +114,13 @@ Tileshift.addLevel({
 					controller.updateScore(500);
 					controller.updateLives(1);
 					this.resources.get(Event.STAR).play();
+					
+					if (this.firstHeart) {
+						this.pause();
+						controller.showOverlay(document.getElementById('heart'));
+						
+						this.firstHeart = false;
+					}
 				}
 				
 				this.resources.get('Player.MOVE').play();
