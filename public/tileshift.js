@@ -32,6 +32,7 @@ Tileshift = {
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
 		resourceLoader.loadImage(Widget.STAR, 'tiles/Star.png');
 		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
+		resourceLoader.loadAudio(Event.DAMAGE, 'effects/Damage.wav');
 	},
 	
 	run: function(config) {
@@ -51,7 +52,7 @@ Tileshift = {
 		this.loadDefaultResources(controller.resources);
 		
 		// Once we have loaded all resources, start the game:
-		controller.resources.loaded(controller.start.bind(controller));
+		controller.resources.loaded(controller.resetLevel.bind(controller));
 		
 		window.addEventListener('keydown', this.handleUserInput.bind(this), false);
 	},
@@ -81,18 +82,33 @@ Tileshift = {
 Tileshift.Controller = function(canvas, levels) {
 	this.canvas = canvas;
 	this.levels = levels;
-	this.currentLevelIndex = 0;
+	
+	this.maximumLives = 5;
 	
 	this.currentLevel = null;
 	this.resources = new ResourceLoader();
 	
-	this.lives = 1;
-	this.maximumLives = 5;
-	
-	this.score = 0;
+	this.resetGame();
 }
 
-Tileshift.Controller.prototype.start = function() {
+Tileshift.Controller.prototype.finishLevel = function() {
+	if (this.currentLevel) {
+		this.currentLevel.onFinish();
+		this.currentLevel = null;
+	}
+}
+
+Tileshift.Controller.prototype.resetGame = function() {
+	this.lives = 1;
+	
+	this.score = 0;
+	
+	this.currentLevelIndex = 0;
+}
+
+Tileshift.Controller.prototype.resetLevel = function() {
+	this.finishLevel();
+	
 	if (this.levels[this.currentLevelIndex]) {
 		this.levels[this.currentLevelIndex].start(this);
 	}
@@ -116,29 +132,36 @@ Tileshift.Controller.prototype.updateScore = function(amount) {
 Tileshift.Controller.prototype.updateLives = function(amount) {
 	this.lives += amount;
 	
-	if (this.lives > this.maximumLives) this.lives = this.maximumLives;
-	else if (this.lives < 0) this.lives = 0;
+	if (this.lives > this.maximumLives) {
+		this.lives = this.maximumLives;
+	} else if (this.lives < 0) {
+		this.lives = 0;
+		
+		return false;
+	}
+	
+	return true;
 }
 
 Tileshift.Controller.prototype.levelCompleted = function() {
-	this.currentLevel.onFinish();
-	this.currentLevel = null;
-	
 	this.currentLevelIndex = (this.currentLevelIndex + 1) % this.levels.length;
 	
-	this.start();
+	this.resetLevel();
+}
+
+Tileshift.Controller.prototype.restartGame = function() {
+	this.resetGame();
+	this.resetLevel();
 }
 
 Tileshift.Controller.prototype.levelFailed = function() {
-	this.currentLevel.onFinish();
-	this.currentLevel = null;
-	
-	this.updateLives(-1);
+	this.finishLevel();
 	
 	if (this.lives > 0) {
-		this.resetLevel();
+		this.updateLives(-1);
+		setTimeout(this.resetLevel.bind(this), 1000);
 	} else {
-		this.gameOver();
+		setTimeout(this.restartGame.bind(this), 1000);
 	}
 }
 
@@ -168,6 +191,7 @@ Event.KEY = 'Event.KEY';
 Event.DOOR = 'Event.DOOR';
 Event.CHEST = 'Event.CHEST';
 Event.STAR = 'Event.STAR';
+Event.DAMAGE = 'Event.DAMAGE';
 
 // Get the Row column displacement for the given Event type.
 Event.displacement = function(e) {
