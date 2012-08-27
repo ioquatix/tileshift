@@ -58,7 +58,8 @@
 
 		<!-- The 2D tile engine -->
 		<script src="tile.js" type="text/javascript"></script>
-		
+		<script src="monster.js" type="text/javascript"></script>
+
 		<!-- The genetic evolution algorithm -->
 		<script src="generator.js" type="text/javascript"></script>
 		
@@ -73,7 +74,7 @@
 		<script src="levels/doorsLevel1.js" type="text/javascript"></script>
 		<script src="levels/doorsLevel2.js" type="text/javascript"></script>
 		<script src="levels/doorsLevel3.js" type="text/javascript"></script>
-		<script src="levels/monster.js" type="text/javascript"></script>
+		<script src="levels/finish.js" type="text/javascript"></script>
 		
 		<script type="text/javascript">
 			window.onload = function() {
@@ -85,7 +86,7 @@
 			<div id="start">
 				<p><img src="tiles/Character Cat Girl.png" /></p>
 				
-				<p>The last thing you remember was stumbling out of the Castle Pub... it is pitch black... &ldquo;Where am I&rdquo; you think to yourself?</p>
+				<p>The last thing you remember was stumbling out of the Castle Pub... it is pitch black... &ldquo;Where am I?&rdquo; you think to yourself?</p>
 				
 				<p>Your thoughts echoes in the void... you feel something cold and damp against the side of your face.</p>
 				
@@ -119,6 +120,16 @@
 				
 				<small>[click to continue]</small>
 			</div>
+			
+			<div id="finish">
+				<p>The door has a note stuck to it that reads:</p>
+				
+				<p>&ldquo;It is time for bed. Thats all folks =) Back in 4 months.&rdquo;</p>
+				
+				<p><img src="tiles/Character Cat Girl.png" /><img src="tiles/Character Horn Girl.png" /><img src="tiles/Character Pink Girl.png" /><img src="tiles/Character Princess Girl.png" /></p>
+				
+				<p><a href="https://github.com/ioquatix/tileshift">Fork me on GitHub</a></p>
+			</div>
 		
 			<div id="keys">
 				<p>You are feeling concerned... who would leave all these keys just lying around!?</p>
@@ -130,14 +141,6 @@
 				<p><img src="tiles/Door Tall Closed.png" /><img src="tiles/Door Tall Closed.png" /><img src="tiles/Door Tall Closed.png" /></p>
 				
 				<p>All these questions are making your head hurt..</p>
-				
-				<small>[click to continue]</small>
-			</div>
-		
-			<div id="gameover">
-				<p>You have died.</p>
-				
-				<p>Your existence was but a small flower amongst the field of daises.</p>
 				
 				<small>[click to continue]</small>
 			</div>

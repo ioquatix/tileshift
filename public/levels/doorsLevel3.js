@@ -27,7 +27,7 @@ Tileshift.addLevel({
 	difficulty: 2.3,
 	
 	randomFloorMutation: function(generator, map) {
-		for (var i = 0; i < 4; i++) {
+		for (var i = 0; i < 2; i++) {
 			var r = randomInt(11) - 5, c = randomInt(11) - 5;
 
 			r += generator.currentPosition[0];
@@ -63,6 +63,7 @@ Tileshift.addLevel({
 		this.resources.loadImage(Tile.BRIDGE, 'tiles/Bridge.png');
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
 		this.resources.loadAudio(Event.KEY, 'effects/Key.wav');
+		this.resources.loadImage(Monster.BUG, 'tiles/Enemy Bug.png');
 		
 		this.onStart = function() {
 			var map = new TileMap([20, 30]);
@@ -80,6 +81,8 @@ Tileshift.addLevel({
 			this.gameState = new GameState(map, [1, 1]);
 			map.layers.portals = new Widget.Layer();
 			map.layers.portals.set([18, 28], new Widget(0, Widget.CHEST));
+
+			map.layers.monsters = new Widget.Layer();
 
 			this.gameState.playerKeys = {};
 			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
@@ -99,9 +102,11 @@ Tileshift.addLevel({
 			}
 		}
 		
-		this.onFinish = function() {
+		this.pause = function() {
 			if (this.interval) clearInterval(this.interval);
 		}
+		
+		this.onFinish = this.pause;
 		
 		this.onTick = function() {
 			var goals = this.gameState.map.getSpecials(Tile.END).concat(
@@ -110,15 +115,23 @@ Tileshift.addLevel({
 					this.gameState.map.layers.stars.allLocations()),
 				generator = new Generator(this.gameState.map, goals, this.gameState.events);
 			generator.mutations.push(config.randomFloorMutation);
+			generator.mutations.push(Monster.randomPlacement);
 			generator.mutations.push(config.randomStarMutation);
 			this.gameState.map = generator.evolve(10);
 			
+			var dead = Monster.update(this.gameState);
+			
 			this.redraw();
+			
+			if (dead) {
+				this.resources.get(Event.DAMAGE).play();
+				controller.levelFailed();
+			}
 		}
 		
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d'),
-				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.doors, this.gameState.map.layers.keys, this.gameState.map.layers.stars, this.gameState];
+				layers = [this.gameState.map, this.gameState.map.layers.portals, this.gameState.map.layers.doors, this.gameState.map.layers.monsters, this.gameState.map.layers.keys, this.gameState.map.layers.stars, this.gameState];
 			
 			this.mapRenderer.display(context, layers);
 			
@@ -146,12 +159,18 @@ Tileshift.addLevel({
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.CHEST).play();
 					
+					this.pause();
+					
+					controller.showOverlay(document.getElementById('complete'));
+					
 					controller.levelCompleted();
 				}
 							
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
+					controller.updateScore(500);
+					controller.updateLives(1);
 					this.resources.get(Event.HEART).play();
 				}
 				

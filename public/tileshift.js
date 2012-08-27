@@ -35,8 +35,8 @@ Tileshift = {
 		resourceLoader.loadImage(Tile.WATER, 'tiles/Water Block.png');
 		resourceLoader.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		resourceLoader.loadAudio(Event.DAMAGE, 'effects/Damage.wav');
-		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
-		this.resources.loadAudio(Event.HEART, 'effects/Star.wav');
+		resourceLoader.loadAudio(Event.MOVE, 'effects/Step.wav');
+		resourceLoader.loadAudio(Event.HEART, 'effects/Star.wav');
 	},
 	
 	run: function(config) {
@@ -104,10 +104,6 @@ Tileshift.Controller = function(canvas, levels) {
 
 Tileshift.Controller.prototype.showOverlay = function(element) {
 	this.overlay.style.display = 'block';
-	//this.overlay.style.width = this.canvas.width + 'px';
-	//this.overlay.style.height = this.canvas.height + 'px';
-	//this.overlay.style.top = this.canvas.offsetTop + 'px';
-	//this.overlay.style.left = this.canvas.offsetLeft + 'px';
 	this.overlay.style.opacity = 1.0;
 	
 	while (this.overlay.childNodes.length > 0)
@@ -122,7 +118,6 @@ Tileshift.Controller.prototype.hideOverlay = function() {
 	while (this.overlay.childNodes.length > 0)
 		this.overlay.removeChild(this.overlay.firstChild);
 	
-	console.log('hideOverlay', this.currentLevel);
 	if (this.currentLevel && this.currentLevel.onResume) {
 		this.currentLevel.onResume();
 	}
@@ -209,6 +204,8 @@ Tileshift.Controller.prototype.levelFailed = function() {
 }
 
 Tileshift.Controller.prototype.rescaleCanvas = function() {
+	if (!this.pixelSize) return;
+	
 	var desiredSize = [this.canvas.parentNode.offsetHeight, this.canvas.parentNode.offsetWidth];
 	
 	var displayRatio = this.pixelSize[1] / this.pixelSize[0],
@@ -225,8 +222,6 @@ Tileshift.Controller.prototype.rescaleCanvas = function() {
 	
 	var fontScale = (desiredSize[0] + desiredSize[1]) / 1200.0;
 	this.overlay.style.fontSize = (fontScale * 100.0) + '%';
-	
-	console.log('fontSize', this.overlay.style.fontSize);
 }
 
 Tileshift.Controller.prototype.resizeCanvas = function(pixelSize) {

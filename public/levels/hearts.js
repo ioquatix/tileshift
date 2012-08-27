@@ -25,7 +25,9 @@ Tileshift.addLevel({
 		for (var i = 0; i < 4; i++) {
 			var r = randomInt(map.size[0]), c = randomInt(map.size[1]);
 
-			if (map.get([r, c]) != null) {
+			var tile = map.get([r, c]);
+
+			if (tile && !tile.special) {
 				map.set([r, c], null);
 			}
 		}
@@ -48,8 +50,6 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
-		this.resources.loadAudio(Event.HEART, 'effects/Star.wav');
 		
 		this.onStart = function() {
 			var map = new TileMap([20, 30]);
