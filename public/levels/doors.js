@@ -46,12 +46,11 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
-		this.resources.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		this.resources.loadImage(Widget.DOOR, 'tiles/Door Tall Closed.png');
 		this.resources.loadImage(Tile.BRIDGE, 'tiles/Bridge.png');
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
 		this.resources.loadAudio(Event.KEY, 'effects/Key.wav');
+		
 		
 		this.onBegin = function() {
 			var map = new TileMap([20, 30]);

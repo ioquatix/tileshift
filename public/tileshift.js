@@ -32,6 +32,8 @@ Tileshift = {
 		resourceLoader.loadImage(Widget.KEY, 'tiles/Key.png');
 		resourceLoader.loadImage(Widget.STAR, 'tiles/Star.png');
 		resourceLoader.loadAudio(Event.CHEST, 'effects/Chest.wav');
+		resourceLoader.loadImage(Tile.WATER, 'tiles/Water Block.png');
+		resourceLoader.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		resourceLoader.loadAudio(Event.DAMAGE, 'effects/Damage.wav');
 	},
 	

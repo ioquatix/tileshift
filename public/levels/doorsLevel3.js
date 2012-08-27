@@ -47,7 +47,6 @@ Tileshift.addLevel({
 	randomStarMutation: function(generator, map) {
 		var r = randomInt(11) - 5, c = randomInt(11) - 5;
 		if(randomInt(100) < 89) return;
-
 		r += generator.currentPosition[0];
 		c += generator.currentPosition[1];
 
@@ -60,8 +59,6 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
-		this.resources.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		this.resources.loadImage(Widget.DOOR, 'tiles/Door Tall Closed.png');
 		this.resources.loadImage(Tile.BRIDGE, 'tiles/Bridge.png');
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
@@ -81,7 +78,7 @@ Tileshift.addLevel({
 			this.gameState = new GameState(map, [1, 1]);
 			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
 			this.gameState.playerKeys = {};
-			
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 			map.rooms = [];
 			map.doors = [];
 			generateRoomsOnMap(map, map.rooms, 7);
@@ -114,6 +111,7 @@ Tileshift.addLevel({
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
 			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.stars, this.gameState.map.layers.keys]);
+			this.controllerRenderer.display(context, controller);
 		}
 		
 		this.onUserEvent = function(event) {
@@ -143,7 +141,9 @@ Tileshift.addLevel({
 				}
 							
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
-						delete this.gameState.map.layers.stars[this.gameState.playerLocation];
+					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
+					
+					this.resources.get(Event.STAR).play();
 				}
 				
 				var keys = this.gameState.map.layers.keys,

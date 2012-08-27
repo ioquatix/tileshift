@@ -39,15 +39,13 @@ Tileshift.addLevel({
 			if (c > map.size[1]-1) c = map.size[1]-2;
 
 			if (map.get([r, c]) == null) {
-				map.set([r, c], new Tile(0, Platform.FLOOR));
+				map.set([r, c], new Tile(0, Platform.DIRT));
 			}
 		}
 	},
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadImage(Tile.WATER, 'tiles/Water Block.png');
-		this.resources.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		this.resources.loadImage(Widget.DOOR, 'tiles/Door Tall Closed.png');
 		this.resources.loadImage(Tile.BRIDGE, 'tiles/Bridge.png');
 		this.resources.loadAudio(Event.DOOR, 'effects/Door.wav');
@@ -66,7 +64,7 @@ Tileshift.addLevel({
 			this.gameState = new GameState(map, [1, 1]);
 			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
 			this.gameState.playerKeys = {};
-			
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 			map.rooms = [];
 			map.doors = [];
 			generateRoomsOnMap(map, map.rooms, 6);
@@ -98,6 +96,7 @@ Tileshift.addLevel({
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
 			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.keys]);
+			this.controllerRenderer.display(context, controller);
 		}
 		
 		this.onUserEvent = function(event) {
@@ -124,6 +123,7 @@ Tileshift.addLevel({
 					
 					controller.levelCompleted();
 				}
+
 				
 				var keys = this.gameState.map.layers.keys,
 					key = keys[this.gameState.playerLocation];
