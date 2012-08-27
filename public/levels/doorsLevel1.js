@@ -126,6 +126,7 @@ Tileshift.addLevel({
 				}
 			} else if (this.gameState.isValidEvent(event)) {
 				this.gameState.pushEvent(event);
+				this.resources.get(Event.MOVE).play();
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.EXIT).play();
