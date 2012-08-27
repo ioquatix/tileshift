@@ -233,17 +233,17 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 	
 	var pixelSize = this.pixelSize(context);
 	
-	var backgroundStyle = context.createLinearGradient(0, 0, 0, pixelSize[0]);
-	backgroundStyle.addColorStop(0, 'rgba(100, 150, 255, 0.5)');
-	backgroundStyle.addColorStop(1, 'rgba(100, 150, 255, 0.2)');
+	var backgroundStyle = context.createLinearGradient(0, 10, 0, pixelSize[0] - 20);
+	backgroundStyle.addColorStop(0, 'rgba(150, 200, 255, 0.95)');
+	backgroundStyle.addColorStop(1, 'rgba(150, 200, 255, 0.4)');
 	
+	context.strokeStyle = '#aaaaff';
 	context.fillStyle = backgroundStyle;
 	
 	roundedRectPath(context, 10, 10, pixelSize[1] - 20, pixelSize[0] - 20, 5);
 	context.fill();
 	context.stroke();
 	
-	context.strokeStyle = '#aaaaff';
 	context.fillStyle = 'white';
 	context.font = 'italic bold 30px sans-serif';
 	context.textBaseline = 'bottom';
@@ -252,7 +252,7 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 	context.save();
 	var image = this.resources.get(Widget.STAR);
 	for (var i = 0; i < controller.maximumLives; i += 1) {
-		if (i > controller.lives) {
+		if (i >= controller.lives) {
 			context.globalCompositeOperation = "lighter";
 			context.globalAlpha = 0.2;
 		}
