@@ -187,11 +187,15 @@ function generateMapDoorsKeys(gameState, map, numDoors){
 
 //Places a specified number of rooms on the map.
 function generateRoomsOnMap(map, roomsList, numberOfRooms) {
-	while(roomsList.length < numberOfRooms){
+	var i = 50;
+	
+	while(roomsList.length < numberOfRooms && i > 1){
 		var room = generateRoom(map);
 		if(room != null){
 			roomsList.push(room);
 		}
+		
+		i -= 1;
 	}
 }
 
