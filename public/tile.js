@@ -59,6 +59,17 @@ Widget.Layer.prototype.get = function(coordinate) {
 	return this[coordinate];
 }
 
+Widget.Layer.prototype.remove = function(coordinate) {
+	delete this[coordinate];
+}
+
+Widget.Layer.prototype.move = function(from, to) {
+	var widget = this[from];
+	
+	this.remove(from);
+	this.set(to, widget);
+}
+
 Widget.Layer.prototype.duplicate = function() {
 	var copy = new Widget.Layer();
 	
