@@ -17,7 +17,7 @@ Tileshift.addLevel({
 			if (c > map.size[1]-1) c = map.size[1]-2;
 
 			if (map.get([r, c]) == null) {
-				map.set([r, c], new Tile(0, Platform.FLOOR));
+				map.set([r, c], new Tile(0, Platform.DIRT));
 			}
 		}
 	},
