@@ -219,8 +219,8 @@ function makeWaterColumn(map){
 			var left = map.get([r,c-1]);
 			var right = map.get([r,c+1]);
 			 if(left || right){
-				map.set([r,c-1], new Tile(0, Platform.DIRT));
-				map.set([r,c+1], new Tile(0, Platform.DIRT));
+				map.set([r,c-1], new Tile(0, Platform.FLOOR));
+				map.set([r,c+1], new Tile(0, Platform.FLOOR));
 			} 
 			map.set([r,c], new Tile(-1, Platform.WATER));
 		}
