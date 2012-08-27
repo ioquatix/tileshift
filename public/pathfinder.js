@@ -115,9 +115,9 @@ SearchRenderer.prototype.display = function (context) {
 		context.textAlign = "center";
 		
 		context.strokeStyle = "#000000";
-		context.strokeText(costText, (0.5+loc[1])*this.scale[1], (loc[0])*this.scale[0]);
+		context.strokeText(costText, (0.5+loc[1])*this.scale[1], (loc[0] + 1)*this.scale[0]);
 		
-		context.fillText(costText, (0.5+loc[1])*this.scale[1], (loc[0])*this.scale[0]);
+		context.fillText(costText, (0.5+loc[1])*this.scale[1], (loc[0] + 1)*this.scale[0]);
 	}
 	
 	var top = this.search.currentBest();
@@ -126,11 +126,11 @@ SearchRenderer.prototype.display = function (context) {
 	context.beginPath();
 
 	if (top) {
-		context.moveTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (0 + top.step[0]))
+		context.moveTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (1 + top.step[0]))
 	}
 
 	while (top != null) {
-		context.lineTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (0 + top.step[0]))
+		context.lineTo(this.scale[1] * (0.5 + top.step[1]), this.scale[0] * (1 + top.step[0]))
 		top = top.parent;
 	}
 	
