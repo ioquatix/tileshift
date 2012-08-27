@@ -1,9 +1,17 @@
+
+// *** class Room ***
+// This class holds information about a rooms position and dimentions.
+function Room(topleft, roomDimensions){
+	this.position = topleft;
+	this.dimensions = roomDimensions;
+}
+
 //Generator support functions.
 function checkCollision(map, p1, p2){
-	var p1x = p1.x > 1 ? p1.x -1 : p1.x;
-	var p1y = p1.y > 1 ? p1.y -1 : p1.y;
-	var p2x = p2.x < map.size[0]-1 ? p2.x + 1 : p2.x;
-	var p2y = p2.y < map.size[1]-1 ? p2.y + 1 : p2.y;
+	var p1x = p1.x > 2 ? p1.x -2 : p1.x;
+	var p1y = p1.y > 2 ? p1.y -2 : p1.y;
+	var p2x = p2.x < map.size[0]-2 ? p2.x + 2 : p2.x;
+	var p2y = p2.y < map.size[1]-2 ? p2.y + 2 : p2.y;
 
 	for(i = p1x; i <= p2x; i++){
 		for(j = p1y; j <= p2y; j++){
@@ -76,69 +84,87 @@ function generateRoom(map) {
 	}
 	if(t < ATTEMPTS){
 		placeRoom(map, p1, p2);
-		return p1;
+		return new Room([p1.x, p1.y], [p2.x-p1.x, p2.y-p1.y]);
 	}
  }
- 
- 
-function generateRoomAt(map, p1) {
-	p1 = new Vec2(p1[0], p1[1]);
-	var MIN = 2;
-	var MAX = 7;
-	var ATTEMPTS = 70000;
-	var t = 0;
-	
-	//Get random coords
-	while(t < ATTEMPTS){
-		var p2 = new Vec2(randomInt(map.size[0]), randomInt( map.size[1]));
-		
-		//check bounds
-		if(p1.x < p2.x && p1.y < p2.y && p2.x - p1.x < MAX && p2.y - p1.y < MAX && p2.x - p1.x > MIN && p2.y - p1.y > MIN){
-			if(!checkCollision(map, p1, p2) && !checkCollision(map, p1, new Vec2(p2.x, p2.y+1)) && !checkCollision(map, p1, new Vec2(p2.x, p2.y-1))){
-				break;
+
+ function getEdgePoints(room){
+	edges = [];
+	for(c = 0; c <= room.dimensions[1]; c++){
+		for(r = 0; r <= room.dimensions[0]; r++){
+			if(c == 0 || r == 0 || r == room.dimensions[0] || c == room.dimensions[1] ){
+				edges.push([r + room.position[0],c + room.position[1]]);
 			}
 		}
-		t++;
 	}
-	if(t < ATTEMPTS){
-		placeRoom(map, p1, p2);
-		return p1;
-	}
-}
-
-//Generate a path of a room at a specific point.
-function generatePath(map, p) {
-	//Take point and find edge randomly.
-	var dirs = goodDirections(map, p);
-	var dir = dirs[randomInt(dirs.length)];
-	var currentPt = [p.x+1, p.y+1];
-	var onPlatform = true;
-	//Walk to edge of platform
-	while(onPlatform){
-		currentPt[0] += dir[0];
-		currentPt[1] += dir[1];
-		if(map.get([currentPt[0],currentPt[1]]) == null){
-			onPlatform = false;
-		}
-	}
+	return edges;
+ }
+ 
+ //Returns true if hits a none START or END tile before hits edge of map.
+ //Otherwise returns undefined.
+ function checkPathHitsRoom(map, spot, direction){
+	var p = spot.slice(0),
+		hits =false;
 	
-	//Draw path until we hit something.
-	while(!onPlatform){
-		//Catch map bounds
-		if(currentPt[0] >= map.size[0] || currentPt[1] >= map.size[1] || currentPt[0] < 0 || currentPt[1] < 0){
-			onPlatform = true;
+	p[0] += direction[0];
+	p[1] += direction[1];
+	if(map.get(p) != null) return [hits, direction];
+	while(p[0] > 0 && p[1] > 0 && p[0] < map.size[0] && p[1] < map.size[1] && hits != true){
+		var tile = map.get( p );
+		if(tile != null) {
+			hits = true;
 			break;
 		}
-		//Set tile
-		map.set([currentPt[0], currentPt[1]], new Tile(0, Platform.FLOOR));
-		//Move and check for hit.
-		currentPt[0] += dir[0];
-		currentPt[1] += dir[1];
-		if(map.get([currentPt[0],currentPt[1]]) != null){
-			onPlatform = true;
-		}
+		p = Vec2.add(p, direction);
+		p[0] += direction[0];
+		p[1] += direction[1];
 	}
+	return [hits, direction];
+ }
+ 
+ function placeBridge(map, bridge, maxlength) {
+	var position = bridge[0],
+		direction = bridge[1],
+		length = 0;
+	
+	while(length < maxlength) {
+		position = Vec2.add(position, direction);
+		if(map.get(position)) break;
+		map.set(position, new Tile(-5, Tile.BRIDGE));
+		length++;
+	}
+	
+ }
+ 
+//Generate a path of a room at a specific point.
+function generatePath(map) {
+	var rooms, room, edges, z, potientialBridges = [], attempts;
+	rooms = map.rooms;
+	attempts = 0;
+	while( attempts < 100 && potientialBridges.length < 20){
+		room = rooms[randomInt(rooms.length)];
+		edges = getEdgePoints(room);
+		spot = edges[randomInt(edges.length)];
+		
+		var dirs = []; //Analyse the four directions
+		dirs.push(checkPathHitsRoom(map, spot, [0, 1]));
+		dirs.push(checkPathHitsRoom(map, spot, [0, -1]));
+		dirs.push(checkPathHitsRoom(map, spot, [-1, 0]));
+		dirs.push(checkPathHitsRoom(map, spot, [1, 0]));
+		
+		for(i = 0; i < dirs.length; i++){
+			if(dirs[i][0]){ 
+				potientialBridges.push([spot, dirs[i][1]]);
+				//map.set(spot, new Tile(10, Tile.BRIDGE)); //VISUAL DEBUG
+			}
+		}
+		attempts++;
+	}
+	
+	bridge = potientialBridges[randomInt(potientialBridges.length)];
+	placeBridge(map, bridge, 50);
 }
+
 
 //Places a given number of doors and keys on the map.
 function generateMapDoorsKeys(gameState, map, numDoors){
@@ -162,9 +188,9 @@ function generateMapDoorsKeys(gameState, map, numDoors){
 //Places a specified number of rooms on the map.
 function generateRoomsOnMap(map, roomsList, numberOfRooms) {
 	while(roomsList.length < numberOfRooms){
-		var roompos = generateRoom(map);
-		if(roompos != null){
-			roomsList.push(roompos);
+		var room = generateRoom(map);
+		if(room != null){
+			roomsList.push(room);
 		}
 	}
 }
@@ -181,7 +207,7 @@ function makeWaterColumn(map){
 		PADDING = 3;
 	for(c = 0; c < map.size[1]; c++){
 		var toptile = map.get([0,c]);
-		//console.log(toptile);
+
 		if( toptile && toptile.identity == Tile.WATER ){
 			waterColumns[c] = true;
 			waterColumns[c+1] = true;
