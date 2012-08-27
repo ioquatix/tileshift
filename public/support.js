@@ -73,8 +73,6 @@ ResourceLoader.prototype.loadImage = function(name, source) {
 	this.resources[name] = resource;
 	
 	resource.addEventListener('load', this.onLoad.bind(this, name));
-	
-	console.log("Loading image", name, source);
 	resource.src = source;
 }
 
@@ -83,9 +81,9 @@ ResourceLoader.prototype.loadAudio = function(name, source) {
 	resource.preload = true;
 	
 	this.resources[name] = resource;
-	
-	console.log("Loading audio", name, source);
 	resource.src = source;
+	
+	resource.load();
 }
 
 ResourceLoader.prototype.get = function(name) {
