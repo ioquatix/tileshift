@@ -37,8 +37,8 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
-		this.resources.loadAudio(Event.STAR, 'effects/Star.wav');
+		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
+		this.resources.loadAudio(Event.HEART, 'effects/Star.wav');
 		this.resources.loadImage(Tile.BRIDGE, 'tiles/Wood Block.png');
 		this.resources.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		this.onBegin = function() {
@@ -102,10 +102,10 @@ Tileshift.addLevel({
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
-					this.resources.get(Event.STAR).play();
+					this.resources.get(Event.HEART).play();
 				}
 				
-				this.resources.get('Player.MOVE').play();
+				this.resources.get(Event.MOVE).play();
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.CHEST).play();

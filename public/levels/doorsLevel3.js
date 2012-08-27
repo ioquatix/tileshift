@@ -152,7 +152,7 @@ Tileshift.addLevel({
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
-					this.resources.get(Event.STAR).play();
+					this.resources.get(Event.HEART).play();
 				}
 				
 				var keys = this.gameState.map.layers.keys,

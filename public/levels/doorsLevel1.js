@@ -116,8 +116,6 @@ Tileshift.addLevel({
 				door = doors[location];
 			
 			if (door) {
-				console.log('door', door, this.gameState.playerKeys);
-				
 				if (this.gameState.playerKeys[door.key.number]) {
 					delete this.gameState.playerKeys[door.key];
 					delete doors[location];

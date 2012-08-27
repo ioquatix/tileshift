@@ -6,10 +6,6 @@ function Monster(identity) {
 Monster.prototype = new Widget();
 Monster.prototype.constructor = Monster;
 
-Monster.prototype.update = function() {
-	
-}
-
 Monster.BUG = 'Monster.BUG';
 
 Tileshift.addLevel({
@@ -19,7 +15,7 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
+		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
 		this.resources.loadImage(Monster.BUG, 'tiles/Enemy Bug.png');
 		
 		this.onBegin = function() {

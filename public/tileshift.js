@@ -35,6 +35,8 @@ Tileshift = {
 		resourceLoader.loadImage(Tile.WATER, 'tiles/Water Block.png');
 		resourceLoader.loadImage(Tile.DIRT, 'tiles/Dirt Block.png');
 		resourceLoader.loadAudio(Event.DAMAGE, 'effects/Damage.wav');
+		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
+		this.resources.loadAudio(Event.HEART, 'effects/Star.wav');
 	},
 	
 	run: function(config) {
@@ -252,8 +254,9 @@ Event = {
 Event.KEY = 'Event.KEY';
 Event.DOOR = 'Event.DOOR';
 Event.CHEST = 'Event.CHEST';
-Event.STAR = 'Event.STAR';
+Event.HEART = 'Event.HEART';
 Event.DAMAGE = 'Event.DAMAGE';
+Event.MOVE = 'Event.MOVE';
 
 // Get the Row column displacement for the given Event type.
 Event.displacement = function(e) {

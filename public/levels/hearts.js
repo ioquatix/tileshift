@@ -21,6 +21,16 @@ Tileshift.addLevel({
 		}
 	},
 
+	randomFloorDestruction: function(generator, map) {
+		for (var i = 0; i < 4; i++) {
+			var r = randomInt(map.size[0]), c = randomInt(map.size[1]);
+
+			if (map.get([r, c]) != null) {
+				map.set([r, c], null);
+			}
+		}
+	},
+
 	randomStarMutation: function(generator, map) {
 		if (randomInt(10) < 5) return;
 		
@@ -38,8 +48,8 @@ Tileshift.addLevel({
 	
 	Level: function(config, controller) {
 		this.resources = new ResourceLoader(controller.resources);
-		this.resources.loadAudio('Player.MOVE', 'effects/Step.wav');
-		this.resources.loadAudio(Event.STAR, 'effects/Star.wav');
+		this.resources.loadAudio(Event.MOVE, 'effects/Step.wav');
+		this.resources.loadAudio(Event.HEART, 'effects/Star.wav');
 		
 		this.onStart = function() {
 			var map = new TileMap([20, 30]);
@@ -85,6 +95,7 @@ Tileshift.addLevel({
 			var generator = new Generator(this.gameState.map, goals, this.gameState.events);
 			
 			generator.mutations.push(config.randomFloorMutation);
+			generator.mutations.push(config.randomFloorDestruction);
 			generator.mutations.push(config.randomStarMutation);
 			
 			this.gameState.map = generator.evolve(10);
@@ -113,7 +124,7 @@ Tileshift.addLevel({
 					
 					controller.updateScore(500);
 					controller.updateLives(1);
-					this.resources.get(Event.STAR).play();
+					this.resources.get(Event.HEART).play();
 					
 					if (this.firstHeart) {
 						this.pause();
@@ -123,7 +134,7 @@ Tileshift.addLevel({
 					}
 				}
 				
-				this.resources.get('Player.MOVE').play();
+				this.resources.get(Event.MOVE).play();
 				
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.CHEST).play();
