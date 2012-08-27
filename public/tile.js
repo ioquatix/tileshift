@@ -66,8 +66,10 @@ Widget.Layer.prototype.remove = function(coordinate) {
 Widget.Layer.prototype.move = function(from, to) {
 	var widget = this[from];
 	
-	this.remove(from);
-	this.set(to, widget);
+	if (!this.get(to)) {
+		this.remove(from);
+		this.set(to, widget);
+	}
 }
 
 Widget.Layer.prototype.duplicate = function() {
@@ -149,6 +151,8 @@ TileMap.prototype.getSpecials = function (special) {
 function TileMapSearch(map, goals) {
 	this.map = map;
 	this.goals = goals;
+	
+	this.distanceFunction = Vec2.manhattanDistance;
 }
 
 TileMapSearch.prototype.addStepsFrom = function (pathFinder, node) {
@@ -176,10 +180,8 @@ TileMapSearch.prototype.addStepsFrom = function (pathFinder, node) {
 }
 
 TileMapSearch.prototype.estimatePathCost = function (fromNode, toNode) {
-	//return Vec2.euclidianDistance(toNode, fromNode);
-	
 	// This is carefully selected:
-	return Vec2.manhattanDistance(toNode, fromNode) * 1.05;
+	return this.distanceFunction(toNode, fromNode) * 1.05;
 }
 
 TileMapSearch.prototype.isGoalState = function (node) {
