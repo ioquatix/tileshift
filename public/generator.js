@@ -18,11 +18,11 @@ Generator.prototype.mutate = function () {
 		this.mutations[index](this, map);
 	}
 	
-	return [this.score(map), map]
+	return map;
 }
 
-Generator.prototype.score = function (map) {
-	var delegate = new TileMapSearch(map, this.goals);
+Generator.prototype.score = function (map, goals) {
+	var delegate = new TileMapSearch(map, goals);
 	var search = new PathFinder(delegate), worst = (map.size[0] + map.size[1]) / 8;
 	
 	delegate.prime(search, this.currentPosition);
@@ -43,20 +43,20 @@ Generator.prototype.score = function (map) {
 }
 
 Generator.prototype.evolve = function (iterations) {
+	// Try to optimise for one goal:
+	var j = randomInt(this.goals.length),
+		goals = [this.goals[j]];
+	
 	var candidates = new BinaryHeap(function(candidate){
 		return candidate[0].cost();
 	});
 	
-	candidates.push([this.score(this.map), this.map])
+	candidates.push([this.score(this.map, goals), this.map])
 	
 	for (var i = 0; i < iterations; i += 1) {
 		var permutation = this.mutate();
-		candidates.push(permutation);
+		candidates.push([this.score(permutation, goals), permutation])
 	}
 	
-	var best = candidates.pop();
-	
-	//console.log('selected', best[0].step, best[0], best[1]);
-	
-	return best[1];
+	return candidates.pop()[1];
 }

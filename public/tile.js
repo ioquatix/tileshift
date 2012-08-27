@@ -148,6 +148,7 @@ TileMapSearch.prototype.addStepsFrom = function (pathFinder, node) {
 		var next = [step[0] + P[i][0], step[1] + P[i][1]];
 		var tile = this.map.get(next);
 		
+		// This approach adds a step based on the minimum cost for all goals:
 		if (tile && !tile.blocked()) {
 			var minimumEstimate = Infinity;
 			
