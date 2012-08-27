@@ -221,7 +221,7 @@ Tileshift.Controller.prototype.rescaleCanvas = function() {
 	this.canvas.style.width = desiredSize[1] + 'px';
 	this.canvas.style.height = desiredSize[0] + 'px';
 	
-	var fontScale = (desiredSize[0] * desiredSize[1]) / (1600.0 * 1200.0);
+	var fontScale = (desiredSize[0] + desiredSize[1]) / 1200.0;
 	this.overlay.style.fontSize = (fontScale * 100.0) + '%';
 	
 	console.log('fontSize', this.overlay.style.fontSize);
@@ -341,7 +341,7 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 			context.globalAlpha = 0.2;
 		}
 		
-		context.drawImage(image, pixelSize[1] - (this.scale[1] * (i + 1.5) * 0.8), -3, image.width * 0.74, image.height * 0.74);
+		context.drawImage(image, pixelSize[1] - (this.scale[1] * (i + 1.5) * 0.8), -inset / 4.0, image.width * 0.74, image.height * 0.74);
 	}
 	context.restore();
 	
@@ -352,7 +352,7 @@ ControllerRenderer.prototype.display = function (context, controller, bag) {
 		var image = this.resources.get(item.identity);
 		
 		if (image) {
-			context.drawImage(image, (pixelSize[1] / 3.0) + (this.scale[1] * (i + 1.5) * 0.8), -6, image.width * 0.74, image.height * 0.74);
+			context.drawImage(image, (pixelSize[1] / 3.0) + (this.scale[1] * (i + 1.5) * 0.8), -inset / 2.0, image.width * 0.74, image.height * 0.74);
 			
 			i += 1;
 		}
