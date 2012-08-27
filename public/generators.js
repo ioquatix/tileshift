@@ -66,7 +66,7 @@ function goodDirections(map, point) {
 function generateRoom(map) {
 	var MIN = 2;
 	var MAX = 7;
-	var ATTEMPTS = 7000;
+	var ATTEMPTS = 50;
 	var t = 0;
 	
 	//Get random coords
