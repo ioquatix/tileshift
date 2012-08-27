@@ -46,6 +46,7 @@ Tileshift.addLevel({
 	
 	randomStarMutation: function(generator, map) {
 		var r = randomInt(11) - 5, c = randomInt(11) - 5;
+		if(randomInt(100) < 89) return;
 
 		r += generator.currentPosition[0];
 		c += generator.currentPosition[1];
