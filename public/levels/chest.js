@@ -23,6 +23,8 @@ Tileshift.addLevel({
 	},
 
 	randomStarMutation: function(generator, map) {
+		if (randomInt(10) < 5) return;
+		
 		var r = randomInt(11) - 5, c = randomInt(11) - 5;
 
 		r += generator.currentPosition[0];
@@ -51,6 +53,7 @@ Tileshift.addLevel({
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
 			this.searchRenderer = new SearchRenderer(this.mapRenderer.scale);
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
 
 			this.gameState = new GameState(map, [1, 1]);
 			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
@@ -86,7 +89,9 @@ Tileshift.addLevel({
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
 			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.stars]);
-			this.searchRenderer.display(context);
+			
+			this.controllerRenderer.display(context, controller);
+			//this.searchRenderer.display(context);
 		}
 		
 		this.onUserEvent = function(event) {
@@ -96,6 +101,8 @@ Tileshift.addLevel({
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
+					controller.updateScore(500);
+					controller.updateLives(1);
 					this.resources.get(Event.STAR).play();
 				}
 				
@@ -104,6 +111,7 @@ Tileshift.addLevel({
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.CHEST).play();
 					
+					controller.updateScore(1000);
 					controller.levelCompleted();
 				}
 			}

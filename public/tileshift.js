@@ -85,6 +85,11 @@ Tileshift.Controller = function(canvas, levels) {
 	
 	this.currentLevel = null;
 	this.resources = new ResourceLoader();
+	
+	this.lives = 1;
+	this.maximumLives = 5;
+	
+	this.score = 0;
 }
 
 Tileshift.Controller.prototype.start = function() {
@@ -104,6 +109,17 @@ Tileshift.Controller.prototype.runLevel = function(level) {
 	level.onBegin();
 }
 
+Tileshift.Controller.prototype.updateScore = function(amount) {
+	this.score += amount;
+}
+
+Tileshift.Controller.prototype.updateLives = function(amount) {
+	this.lives += amount;
+	
+	if (this.lives > this.maximumLives) this.lives = this.maximumLives;
+	else if (this.lives < 0) this.lives = 0;
+}
+
 Tileshift.Controller.prototype.levelCompleted = function() {
 	this.currentLevel.onFinish();
 	this.currentLevel = null;
@@ -117,8 +133,13 @@ Tileshift.Controller.prototype.levelFailed = function() {
 	this.currentLevel.onFinish();
 	this.currentLevel = null;
 	
-	// This could potentially have lives.
-	this.resetGame();
+	this.updateLives(-1);
+	
+	if (this.lives > 0) {
+		this.resetLevel();
+	} else {
+		this.gameOver();
+	}
 }
 
 Tileshift.Controller.prototype.resizeCanvas = function(pixelSize) {
@@ -193,5 +214,63 @@ GameState.prototype.get = function(coordinate) {
 		return new Widget(0, Widget.PLAYER);
 	} else {
 		return this.widgets[coordinate];
+	}
+}
+
+// Display the grid on a canvas object
+function ControllerRenderer (resources, size, scale) {
+	this.size = size;
+	this.scale = scale || [40, 50];
+	this.resources = resources;
+}
+
+ControllerRenderer.prototype.pixelSize = function(context) {
+	return [this.scale[0] * 1.6, context.canvas.width];
+}
+
+ControllerRenderer.prototype.display = function (context, controller, bag) {
+	var lives = controller.lives, score = controller.score;
+	
+	var pixelSize = this.pixelSize(context);
+	
+	var backgroundStyle = context.createLinearGradient(0, 0, 0, pixelSize[0]);
+	backgroundStyle.addColorStop(0, 'rgba(100, 150, 255, 0.5)');
+	backgroundStyle.addColorStop(1, 'rgba(100, 150, 255, 0.2)');
+	
+	context.fillStyle = backgroundStyle;
+	
+	roundedRectPath(context, 10, 10, pixelSize[1] - 20, pixelSize[0] - 20, 5);
+	context.fill();
+	context.stroke();
+	
+	context.strokeStyle = '#aaaaff';
+	context.fillStyle = 'white';
+	context.font = 'italic bold 30px sans-serif';
+	context.textBaseline = 'bottom';
+	context.fillText('Score: ' + score, 30, 50);
+	
+	context.save();
+	var image = this.resources.get(Widget.STAR);
+	for (var i = 0; i < controller.maximumLives; i += 1) {
+		if (i > controller.lives) {
+			context.globalCompositeOperation = "lighter";
+			context.globalAlpha = 0.2;
+		}
+		
+		context.drawImage(image, pixelSize[1] - (this.scale[1] * (i + 1.5) * 0.8), -6, image.width * 0.74, image.height * 0.74);
+	}
+	context.restore();
+	
+	var i = 0;
+	for (var key in bag) {
+		var item = bag[key];
+		
+		var image = this.resources.get(item.identity);
+		
+		if (image) {
+			context.drawImage(image, (pixelSize[1] / 3.0) + (this.scale[1] * (i + 1.5) * 0.8), -6, image.width * 0.74, image.height * 0.74);
+			
+			i += 1;
+		}
 	}
 }

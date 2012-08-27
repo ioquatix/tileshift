@@ -64,6 +64,8 @@ Tileshift.addLevel({
 			controller.resizeCanvas(this.mapRenderer.pixelSize());
 
 			this.gameState = new GameState(map, [1, 1]);
+			this.controllerRenderer = new ControllerRenderer(this.resources, map.size, this.mapRenderer.scale);
+
 			this.gameState.widgets[[18, 28]] = new Widget(0, Widget.CHEST);
 			this.gameState.playerKeys = {};
 			
@@ -98,6 +100,8 @@ Tileshift.addLevel({
 		this.redraw = function() {
 			var context = controller.canvas.getContext('2d');
 			this.mapRenderer.display(context, [this.gameState.map, this.gameState, this.gameState.map.layers.doors, this.gameState.map.layers.keys]);
+			
+			this.controllerRenderer.display(context, controller, this.gameState.playerKeys);
 		}
 		
 		this.onUserEvent = function(event) {
@@ -128,7 +132,7 @@ Tileshift.addLevel({
 				var keys = this.gameState.map.layers.keys,
 					key = keys[this.gameState.playerLocation];
 				if (key) {
-					this.gameState.playerKeys[key.number] = true;
+					this.gameState.playerKeys[key.number] = key;
 					
 					this.resources.get(Event.KEY).play();
 					
