@@ -159,13 +159,9 @@ Tileshift.addLevel({
 				if (Vec2.equals(this.gameState.playerLocation, [18, 28])) {
 					this.resources.get(Event.EXIT).play();
 					
-					this.pause();
-					
-					controller.showOverlay(document.getElementById('complete'));
-					
 					controller.levelCompleted();
 				}
-							
+				
 				if (this.gameState.map.layers.stars[this.gameState.playerLocation]) {
 					delete this.gameState.map.layers.stars[this.gameState.playerLocation];
 					
